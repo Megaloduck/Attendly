@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="Attendly.Android/Attendly.Android.csproj" />
+  <Project Path="Attendly.Browser/Attendly.Browser.csproj" />
+  <Project Path="Attendly.Desktop/Attendly.Desktop.csproj" />
+  <Project Path="Attendly.iOS/Attendly.iOS.csproj" />
+  <Project Path="Attendly/Attendly.csproj" />
+</Solution>
