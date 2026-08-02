@@ -1,0 +1,261 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using SQLite;
+using Attendly.Models;
+
+namespace Attendly.Data;
+
+/// <summary>
+/// Resolves where the SQLite database file lives. Each platform head can
+/// register its own implementation via DI (Android/iOS get their app-sandbox
+/// path in Phase 5, registered *before* calling AddAttendlyCore()); this
+/// default works out of the box on Desktop.
+/// </summary>
+public interface IAppPathProvider
+{
+    string GetDatabasePath();
+}
+
+public class DefaultAppPathProvider : IAppPathProvider
+{
+    public string GetDatabasePath()
+    {
+        var folder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Attendly");
+        Directory.CreateDirectory(folder);
+        return Path.Combine(folder, "attendly.db3");
+    }
+}
+
+/// <summary>
+/// Single point of access to the local SQLite database. One instance is
+/// shared for the lifetime of the app (registered as a singleton in Services.cs).
+/// Call InitializeAsync() once at startup before using anything else.
+/// </summary>
+public class AttendanceRepository
+{
+    private readonly SQLiteAsyncConnection _db;
+
+    public AttendanceRepository(IAppPathProvider pathProvider)
+    {
+        _db = new SQLiteAsyncConnection(pathProvider.GetDatabasePath());
+    }
+
+    public async Task InitializeAsync()
+    {
+        await _db.CreateTableAsync<Santri>();
+        await _db.CreateTableAsync<KelasConfig>();
+        await _db.CreateTableAsync<AttendanceRecord>();
+        await _db.CreateTableAsync<DevicePairing>();
+        await _db.CreateTableAsync<SyncCheckpoint>();
+
+        await EnsureDefaultKelasConfigsAsync();
+    }
+
+    private async Task EnsureDefaultKelasConfigsAsync()
+    {
+        foreach (TartilLevel level in Enum.GetValues<TartilLevel>())
+        {
+            var existing = await _db.Table<KelasConfig>()
+                .Where(k => k.TartilLevel == level)
+                .FirstOrDefaultAsync();
+
+            if (existing is null)
+            {
+                await _db.InsertAsync(new KelasConfig { TartilLevel = level });
+            }
+        }
+    }
+
+    // ---------------- Santri ----------------
+
+    public Task<List<Santri>> GetAllSantriAsync() =>
+        _db.Table<Santri>().Where(s => s.IsActive).OrderBy(s => s.Nama).ToListAsync();
+
+    public Task<List<Santri>> GetSantriByTartilAsync(TartilLevel level) =>
+        _db.Table<Santri>()
+            .Where(s => s.IsActive && s.TartilLevel == level)
+            .OrderBy(s => s.NamaPanggilan)
+            .ToListAsync();
+
+    /// <summary>The Desktop admin "Unassigned" bucket - santri with no Tartil yet.</summary>
+    public Task<List<Santri>> GetUnassignedSantriAsync() =>
+        _db.Table<Santri>()
+            .Where(s => s.IsActive && s.TartilLevel == null)
+            .OrderBy(s => s.Nama)
+            .ToListAsync();
+
+    public Task<int> UpsertSantriAsync(Santri santri) =>
+        santri.Id == 0 ? _db.InsertAsync(santri) : _db.UpdateAsync(santri);
+
+    public Task<int> DeactivateSantriAsync(int santriId) =>
+        _db.ExecuteAsync("UPDATE Santri SET IsActive = 0 WHERE Id = ?", santriId);
+
+    // ---------------- KelasConfig ----------------
+
+    public Task<List<KelasConfig>> GetAllKelasConfigsAsync() => _db.Table<KelasConfig>().ToListAsync();
+
+    public Task<KelasConfig?> GetKelasConfigAsync(TartilLevel level) =>
+        _db.Table<KelasConfig>().Where(k => k.TartilLevel == level).FirstOrDefaultAsync();
+
+    public Task<int> UpsertKelasConfigAsync(KelasConfig config) => _db.InsertOrReplaceAsync(config);
+
+    // ---------------- AttendanceRecord ----------------
+
+    /// <summary>
+    /// Returns the day's attendance for a class, auto-creating Libur ('O')
+    /// records for any santri who don't have one yet on non-session days.
+    /// </summary>
+    public async Task<List<AttendanceRecord>> GetOrInitializeDayAsync(TartilLevel level, DateTime date)
+    {
+        date = date.Date;
+        var config = await GetKelasConfigAsync(level) ?? new KelasConfig { TartilLevel = level };
+        var roster = await GetSantriByTartilAsync(level);
+        var existing = await _db.Table<AttendanceRecord>()
+            .Where(r => r.TartilLevel == level && r.Date == date)
+            .ToListAsync();
+
+        var bySantriId = existing.ToDictionary(r => r.SantriId);
+        var isSessionDay = config.IsSessionDay(date.DayOfWeek);
+
+        foreach (var santri in roster)
+        {
+            if (bySantriId.ContainsKey(santri.Id)) continue;
+            if (!isSessionDay)
+            {
+                var libur = new AttendanceRecord
+                {
+                    SantriId = santri.Id,
+                    TartilLevel = level,
+                    Date = date,
+                    Status = AttendanceStatus.Libur,
+                    DicatatPadaTicks = DateTime.UtcNow.Ticks,
+                    SyncState = SyncState.Pending,
+                };
+                libur.Id = await _db.InsertAsync(libur);
+                bySantriId[santri.Id] = libur;
+            }
+        }
+
+        return bySantriId.Values.OrderBy(r => r.SantriId).ToList();
+    }
+
+    /// <summary>
+    /// Marks (or updates) one santri's status for one day.
+    /// </summary>
+    public async Task MarkAttendanceAsync(int santriId, TartilLevel level, DateTime date, AttendanceStatus status)
+    {
+        date = date.Date;
+        var existing = await _db.Table<AttendanceRecord>()
+            .Where(r => r.SantriId == santriId && r.Date == date)
+            .FirstOrDefaultAsync();
+
+        var now = DateTime.UtcNow.Ticks;
+
+        if (existing is null)
+        {
+            await _db.InsertAsync(new AttendanceRecord
+            {
+                SantriId = santriId,
+                TartilLevel = level,
+                Date = date,
+                Status = status,
+                DicatatPadaTicks = now,
+                SyncState = SyncState.Pending,
+            });
+            return;
+        }
+
+        existing.Status = status;
+        existing.DicatatPadaTicks = now;
+        existing.SyncState = SyncState.Pending;
+        await _db.UpdateAsync(existing);
+    }
+
+    /// <summary>
+    /// Applies a record coming from the sync API using last-write-wins.
+    /// Returns true if the incoming record won and was applied.
+    /// </summary>
+    public async Task<bool> ApplyIncomingRecordAsync(AttendanceRecord incoming)
+    {
+        var existing = await _db.Table<AttendanceRecord>()
+            .Where(r => r.SantriId == incoming.SantriId && r.Date == incoming.Date)
+            .FirstOrDefaultAsync();
+
+        if (existing is null)
+        {
+            incoming.SyncState = SyncState.Synced;
+            await _db.InsertAsync(incoming);
+            return true;
+        }
+
+        if (incoming.DicatatPadaTicks <= existing.DicatatPadaTicks)
+            return false; // local copy is newer or equal - keep it
+
+        existing.Status = incoming.Status;
+        existing.DicatatPadaTicks = incoming.DicatatPadaTicks;
+        existing.SyncState = SyncState.Synced;
+        await _db.UpdateAsync(existing);
+        return true;
+    }
+
+    public Task<List<AttendanceRecord>> GetPendingSyncRecordsAsync() =>
+        _db.Table<AttendanceRecord>().Where(r => r.SyncState == SyncState.Pending).ToListAsync();
+
+    public async Task MarkSyncedAsync(IEnumerable<int> recordIds)
+    {
+        foreach (var id in recordIds)
+        {
+            await _db.ExecuteAsync(
+                "UPDATE AttendanceRecord SET SyncState = ? WHERE Id = ?",
+                (int)SyncState.Synced, id);
+        }
+    }
+
+    public Task<List<AttendanceRecord>> GetAttendanceForMonthAsync(TartilLevel level, int year, int month)
+    {
+        var start = new DateTime(year, month, 1);
+        var end = start.AddMonths(1);
+        return _db.Table<AttendanceRecord>()
+            .Where(r => r.TartilLevel == level && r.Date >= start && r.Date < end)
+            .ToListAsync();
+    }
+
+    // ---------------- Device pairing ----------------
+
+    public Task<DevicePairing?> GetPairingAsync() =>
+        _db.Table<DevicePairing>().Where(p => p.Id == 1).FirstOrDefaultAsync();
+
+    public Task<int> SavePairingAsync(string ip, int port, string token) =>
+        _db.InsertOrReplaceAsync(new DevicePairing
+        {
+            Id = 1,
+            DesktopIp = ip,
+            DesktopPort = port,
+            PairingToken = token,
+            IsPaired = true,
+        });
+
+    public Task<int> ClearPairingAsync() =>
+        _db.InsertOrReplaceAsync(new DevicePairing { Id = 1, IsPaired = false });
+
+    // ---------------- Sync checkpoints ----------------
+
+    public Task<SyncCheckpoint?> GetSyncCheckpointAsync(TartilLevel level, string yearMonth) =>
+        _db.Table<SyncCheckpoint>()
+            .Where(c => c.TartilLevel == level && c.YearMonth == yearMonth)
+            .FirstOrDefaultAsync();
+
+    public Task<int> SaveSyncCheckpointAsync(TartilLevel level, string yearMonth, long ticks) =>
+        _db.InsertOrReplaceAsync(new SyncCheckpoint
+        {
+            TartilLevel = level,
+            YearMonth = yearMonth,
+            LastSyncedTicks = ticks,
+        });
+}

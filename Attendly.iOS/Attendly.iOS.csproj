@@ -13,4 +13,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Attendly\Attendly.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Pairing\" />
+  </ItemGroup>
 </Project>
