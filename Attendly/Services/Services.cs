@@ -1,4 +1,4 @@
-﻿    using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
     {
         services.TryAddSingleton<IAppPathProvider, DefaultAppPathProvider>();
         services.TryAddSingleton<IClock, SystemClock>();
+        services.TryAddSingleton<ILocalSyncService, LocalSyncService>();
 
         // One shared SQLite connection for the app's lifetime.
         services.AddSingleton<AttendanceRepository>();

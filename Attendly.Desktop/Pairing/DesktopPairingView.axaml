@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Attendly.Desktop.Pairing"
+             xmlns:conv="using:Avalonia.Data.Converters"
+             x:Class="Attendly.Desktop.Pairing.DesktopPairingView"
+             x:DataType="vm:DesktopPairingViewModel">
+  <Grid RowDefinitions="Auto,*" Margin="24">
+    <StackPanel Grid.Row="0" Spacing="12">
+      <TextBlock Text="Hubungkan Perangkat Guru" FontSize="22" FontWeight="Bold"/>
+      <TextBlock Text="Buat kode baru, lalu scan dengan aplikasi di HP guru (atau salin kode untuk dimasukkan manual)." Opacity="0.7" TextWrapping="Wrap"/>
+      <Button Content="Buat Kode Baru" Command="{Binding GenerateCodeCommand}" HorizontalAlignment="Left"/>
+
+      <Border IsVisible="{Binding QrImage, Converter={x:Static conv:ObjectConverters.IsNotNull}}"
+              Background="White" Padding="12" HorizontalAlignment="Left" CornerRadius="8">
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+          <Image Source="{Binding QrImage}" Width="200" Height="200"/>
+          <SelectableTextBlock Text="{Binding PairingCodeText}" HorizontalAlignment="Center" FontFamily="Consolas,monospace" FontSize="12"/>
+        </StackPanel>
+      </Border>
+
+      <TextBlock Text="Perangkat Terhubung" FontSize="16" FontWeight="SemiBold" Margin="0,16,0,0"/>
+    </StackPanel>
+
+    <ScrollViewer Grid.Row="1">
+      <ItemsControl ItemsSource="{Binding PairedDevices}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:PairedDeviceRowViewModel">
+            <Border Padding="10" Margin="0,0,0,6" CornerRadius="6" Background="#F3F4F6">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                  <TextBlock Text="{Binding PairedAndLastSeen}" Opacity="0.7" FontSize="12"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="Hapus" Command="{Binding RemoveCommand}"/>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

@@ -54,6 +54,7 @@ public class AttendanceRepository
         await _db.CreateTableAsync<AttendanceRecord>();
         await _db.CreateTableAsync<DevicePairing>();
         await _db.CreateTableAsync<SyncCheckpoint>();
+        await _db.CreateTableAsync<PairedDevice>(); 
 
         await EnsureDefaultKelasConfigsAsync();
     }
@@ -226,6 +227,9 @@ public class AttendanceRepository
             .Where(r => r.TartilLevel == level && r.Date >= start && r.Date < end)
             .ToListAsync();
     }
+    /// <summary>Single-record lookup used by the Desktop API to report what it actually holds after a conflict.</summary>
+   public Task<AttendanceRecord?> GetRecordAsync(int santriId, DateTime date) =>
+        _db.Table<AttendanceRecord>().Where(r => r.SantriId == santriId && r.Date == date.Date).FirstOrDefaultAsync();
 
     // ---------------- Device pairing ----------------
 
@@ -244,6 +248,22 @@ public class AttendanceRepository
 
     public Task<int> ClearPairingAsync() =>
         _db.InsertOrReplaceAsync(new DevicePairing { Id = 1, IsPaired = false });
+
+    // ---------------- Desktop's paired-device registry ----------------
+
+    public Task<List<PairedDevice>> GetPairedDevicesAsync() =>
+        _db.Table<PairedDevice>().OrderByDescending(d => d.PairedAtTicks).ToListAsync();
+
+    public Task<PairedDevice?> GetPairedDeviceByTokenAsync(string token) =>
+        _db.Table<PairedDevice>().Where(d => d.Token == token).FirstOrDefaultAsync();
+
+    public Task<int> AddPairedDeviceAsync(string token, string label) =>
+        _db.InsertAsync(new PairedDevice { Token = token, Label = label, PairedAtTicks = DateTime.UtcNow.Ticks });
+
+    public Task<int> RemovePairedDeviceAsync(int id) => _db.DeleteAsync<PairedDevice>(id);
+
+    public Task TouchLastSeenAsync(string token) =>
+        _db.ExecuteAsync("UPDATE PairedDevice SET LastSeenTicks = ? WHERE Token = ?", DateTime.UtcNow.Ticks, token);
 
     // ---------------- Sync checkpoints ----------------
 

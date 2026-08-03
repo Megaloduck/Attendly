@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Attendly.ViewModels"
+             x:Class="Attendly.Views.MobilePairingView"
+             x:DataType="vm:MobilePairingViewModel">
+  <StackPanel Margin="20" Spacing="12">
+    <TextBlock Text="Hubungkan ke Desktop" FontSize="20" FontWeight="Bold"/>
+
+    <TextBlock IsVisible="{Binding IsPaired}"
+               Text="{Binding PairedDesktopLabel, StringFormat='Terhubung ke {0}'}"
+               Foreground="Green"/>
+
+    <TextBlock Text="Masukkan kode dari layar 'Hubungkan Perangkat Guru' di Desktop:" TextWrapping="Wrap"/>
+    <TextBox Text="{Binding PairingCodeInput}" Watermark="ip:port:token"/>
+    <Button Content="Hubungkan" Command="{Binding ConnectCommand}"/>
+
+    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Opacity="0.8"/>
+
+    <Button Content="Selesai" Command="{Binding DoneCommand}" HorizontalAlignment="Left"/>
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,134 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Attendly.Data;
+using Attendly.Models;
+using Attendly.Sync;
+
+namespace Attendly.Desktop.Hosting;
+
+/// <summary>
+/// Embeds a small local HTTP API inside the Desktop app - the "database host"
+/// half of Attendly's LAN sync design (PRD Section 2). Runs alongside the
+/// Avalonia UI in the same process; started once from Program.cs.
+/// </summary>
+public static class AttendlyApiHost
+{
+    public const int Port = 5279;
+
+    public static async Task StartAsync(AttendanceRepository repository)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseUrls($"http://0.0.0.0:{Port}");
+
+        var app = builder.Build();
+
+        app.Use(async (context, next) =>
+        {
+            var token = context.Request.Headers["X-Pairing-Token"].ToString();
+            if (string.IsNullOrEmpty(token))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsync("Missing pairing token.");
+                return;
+            }
+
+            var device = await repository.GetPairedDeviceByTokenAsync(token);
+            if (device is null)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsync("Unknown pairing token.");
+                return;
+            }
+
+            await repository.TouchLastSeenAsync(token);
+            await next();
+        });
+
+        app.MapGet("/api/health", () => Results.Ok(new HealthResponse { Ok = true, ServerName = "Attendly Desktop" }));
+
+        app.MapGet("/api/roster", async () =>
+        {
+            var santri = await repository.GetAllSantriAsync();
+            var kelas = await repository.GetAllKelasConfigsAsync();
+
+            return Results.Ok(new RosterResponse
+            {
+                Santri = santri.Select(s => new SantriDto
+                {
+                    Id = s.Id,
+                    Nik = s.Nik,
+                    Nama = s.Nama,
+                    NamaPanggilan = s.NamaPanggilan,
+                    JenisKelaminCode = s.JenisKelamin.ToCode(),
+                    TempatLahir = s.TempatLahir,
+                    Alamat = s.Alamat,
+                    MasukTpqTahun = s.MasukTpqTahun,
+                    TartilLevel = s.TartilLevel,
+                    IsActive = s.IsActive,
+                }).ToList(),
+                Kelas = kelas.Select(k => new KelasConfigDto
+                {
+                    TartilLevel = k.TartilLevel,
+                    SessionDaysMask = k.SessionDaysMask,
+                }).ToList(),
+            });
+        });
+
+        app.MapGet("/api/attendance/{tartil}/{yyyyMM}", async (TartilLevel tartil, string yyyyMM) =>
+        {
+            if (yyyyMM.Length != 6 || !int.TryParse(yyyyMM[..4], out var year) || !int.TryParse(yyyyMM[4..], out var month))
+                return Results.BadRequest("yyyyMM must be e.g. 202607");
+
+            var records = await repository.GetAttendanceForMonthAsync(tartil, year, month);
+            return Results.Ok(records.Select(r => new AttendanceRecordDto
+            {
+                SantriId = r.SantriId,
+                TartilLevel = r.TartilLevel,
+                Date = r.Date,
+                StatusCode = r.Status.ToCode(),
+                DicatatPadaTicks = r.DicatatPadaTicks,
+            }).ToList());
+        });
+
+        app.MapPost("/api/attendance/sync", async (SyncPushRequest request) =>
+        {
+            var serverWins = new List<AttendanceRecordDto>();
+
+            foreach (var dto in request.Records)
+            {
+                var incoming = new AttendanceRecord
+                {
+                    SantriId = dto.SantriId,
+                    TartilLevel = dto.TartilLevel,
+                    Date = dto.Date,
+                    Status = AttendanceStatusExtensions.FromCode(dto.StatusCode),
+                    DicatatPadaTicks = dto.DicatatPadaTicks,
+                };
+
+                var applied = await repository.ApplyIncomingRecordAsync(incoming);
+                if (!applied)
+                {
+                    var current = await repository.GetRecordAsync(dto.SantriId, dto.Date);
+                    if (current is not null)
+                    {
+                        serverWins.Add(new AttendanceRecordDto
+                        {
+                            SantriId = current.SantriId,
+                            TartilLevel = current.TartilLevel,
+                            Date = current.Date,
+                            StatusCode = current.Status.ToCode(),
+                            DicatatPadaTicks = current.DicatatPadaTicks,
+                        });
+                    }
+                }
+            }
+
+            return Results.Ok(new SyncPushResponse { ServerWins = serverWins });
+        });
+
+        await app.RunAsync();
+    }
+}

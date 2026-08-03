@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Attendly.ViewModels"
+             xmlns:controls="using:Attendly.Controls"
+             x:Class="Attendly.Views.KelasPickerView"
+             x:DataType="vm:KelasPickerViewModel">
+  <Grid RowDefinitions="Auto,*">
+    <TextBlock Grid.Row="0" Text="Pilih Kelas" FontSize="22" FontWeight="Bold" Margin="16"/>
+
+    <ScrollViewer Grid.Row="1">
+      <ItemsControl ItemsSource="{Binding Kelas}" Margin="16,0,16,16">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:KelasSummaryViewModel">
+            <Button Command="{Binding SelectCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    MinHeight="56"
+                    Margin="0,0,0,8">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="16"/>
+                  <TextBlock Text="{Binding SantriCount, StringFormat='{}{0} santri'}" Opacity="0.7" FontSize="13"/>
+                </StackPanel>
+                <controls:LucideIcon Grid.Column="1" Kind="ChevronRight" Width="20" Height="20" VerticalAlignment="Center"/>
+              </Grid>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

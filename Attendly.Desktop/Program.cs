@@ -1,18 +1,26 @@
 ﻿using System;
 using Avalonia;
+using Attendly.Desktop.Hosting;
+using Attendly.Desktop.Pairing;
 
 namespace Attendly.Desktop;
 
 sealed class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        Attendly.App.RootContentFactory = repository =>
+            new DesktopPairingView { DataContext = new DesktopPairingViewModel(repository) };
 
-    // Avalonia configuration, don't remove; also used by visual designer.
+        Attendly.App.CoreServicesReady += repository =>
+        {
+            _ = AttendlyApiHost.StartAsync(repository);
+        };
+
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
+
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()

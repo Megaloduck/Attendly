@@ -1,5 +1,8 @@
-﻿using System;
-using SQLite;
+﻿using SQLite;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Attendly.Models;
 
@@ -234,4 +237,22 @@ public class SyncCheckpoint
     public long LastSyncedTicks { get; set; }
 }
 
-#endregion
+/// <summary>
+/// Desktop-side registry of phones/tablets allowed to sync against the local
+/// API (PRD Section 2). One row per paired device's token.
+/// </summary>
+[Table("PairedDevice")]
+public class PairedDevice
+{   
+    [PrimaryKey, AutoIncrement]
+    public int Id { get; set; }
+
+    [Indexed(Name = "UX_PairedDevice_Token", Unique = true)]
+    [NotNull]
+    public string Token { get; set; } = string.Empty;
+
+    public string Label { get; set; } = "Perangkat baru";
+    public long PairedAtTicks { get; set; }
+    public long? LastSeenTicks { get; set; }
+}
+ #endregion
