@@ -9,6 +9,14 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Models\Models.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="Models\Models.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" />
@@ -21,9 +29,10 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" />
 	<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controls\" />
+    <Folder Include="Converters\" />
   </ItemGroup>
 </Project>

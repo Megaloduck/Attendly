@@ -19,14 +19,11 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Android" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Attendly\Attendly.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Pairing\" />
   </ItemGroup>
 </Project>

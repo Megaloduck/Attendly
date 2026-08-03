@@ -1,8 +1,9 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Attendly.Data;
@@ -25,7 +26,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IClock, SystemClock>();
 
         // One shared SQLite connection for the app's lifetime.
-        services.AddSingleton<AbsensiRepository>();
+        services.AddSingleton<AttendanceRepository>();
 
         return services;
     }
