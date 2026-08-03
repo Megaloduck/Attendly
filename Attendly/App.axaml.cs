@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -44,7 +45,11 @@ public partial class App : Application
         // CreateTableAsync calls against a local SQLite file, fast even on
         // mobile. Revisit with a splash/loading state in Phase 5 if that
         // stops being true on real devices.
-        repository.InitializeAsync().GetAwaiter().GetResult();
+
+        // Run on a thread-pool thread so InitializeAsync's internal awaits don't
+        // try to resume on this (blocked) UI thread's SynchronizationContext -
+        // doing that directly deadlocks on startup.
+        Task.Run(() => repository.InitializeAsync()).GetAwaiter().GetResult();
 
         Repository = repository;
         CoreServicesReady?.Invoke(repository);

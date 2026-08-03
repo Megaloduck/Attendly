@@ -1,29 +1,29 @@
-﻿using System;
-using Avalonia;
-using Attendly.Desktop.Hosting;
-using Attendly.Desktop.Pairing;
+﻿    using System;
+    using Avalonia;
+    using Attendly.Desktop.Hosting;
+    using Attendly.Desktop.Pairing;
 
-namespace Attendly.Desktop;
+    namespace Attendly.Desktop;
 
-sealed class Program
-{
-    [STAThread]
-    public static void Main(string[] args)
+    sealed class Program
     {
-        Attendly.App.RootContentFactory = repository =>
-            new DesktopPairingView { DataContext = new DesktopPairingViewModel(repository) };
-
-        Attendly.App.CoreServicesReady += repository =>
+        [STAThread]
+        public static void Main(string[] args)
         {
-            _ = AttendlyApiHost.StartAsync(repository);
-        };
+            Attendly.App.RootContentFactory = repository =>
+                new DesktopPairingView { DataContext = new DesktopPairingViewModel(repository) };
 
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            Attendly.App.CoreServicesReady += repository =>
+            {
+                _ = AttendlyApiHost.StartAsync(repository);
+            };
+
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace();
     }
-
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-            .WithInterFont()
-            .LogToTrace();
-}

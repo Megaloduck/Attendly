@@ -21,9 +21,10 @@ public static class AttendlyApiHost
     public static async Task StartAsync(AttendanceRepository repository)
     {
         var builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseUrls($"http://0.0.0.0:{Port}");
+        
 
         var app = builder.Build();
+        app.Urls.Add($"http://0.0.0.0:{Port}");
 
         app.Use(async (context, next) =>
         {
