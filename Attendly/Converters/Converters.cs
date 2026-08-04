@@ -93,7 +93,7 @@ value is ThemeMode.Dark ? LucideIconKind.Moon : LucideIconKind.Sun;
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
 throw new NotSupportedException();
-    }
+}
 
 public class ThemeModeToLabelConverter : IValueConverter
 {
@@ -102,4 +102,15 @@ value is ThemeMode.Dark ? "Mode Gelap" : "Mode Terang";
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
 throw new NotSupportedException();
+}
+
+/// <summary>Turns a "#RRGGBB" string into a brush - used to bind per-item accent colors
+/// (Dashboard stat cards) without hardcoding a fixed set of brushes in XAML.</summary>
+public class HexToBrushConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is string hex ? new SolidColorBrush(Color.Parse(hex)) : Brushes.Gray;
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
 }

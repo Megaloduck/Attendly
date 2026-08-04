@@ -25,6 +25,7 @@
             <conv:SyncStateToIconKindConverter x:Key="SyncStateToIconKindConverter"/>
             <conv:ThemeModeToIconKindConverter x:Key="ThemeModeToIconKindConverter"/>
             <conv:ThemeModeToLabelConverter x:Key="ThemeModeToLabelConverter"/>
+            <conv:HexToBrushConverter x:Key="HexToBrushConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 
