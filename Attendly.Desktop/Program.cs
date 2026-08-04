@@ -1,7 +1,7 @@
 ﻿    using System;
     using Avalonia;
     using Attendly.Desktop.Hosting;
-    using Attendly.Desktop.Pairing;
+
 
     namespace Attendly.Desktop;
 
@@ -11,9 +11,9 @@
         public static void Main(string[] args)
         {
             Attendly.App.RootContentFactory = repository =>
-                new DesktopPairingView { DataContext = new DesktopPairingViewModel(repository) };
+                new DesktopShellView { DataContext = new DesktopShellViewModel(repository) };
 
-            Attendly.App.CoreServicesReady += repository =>
+        Attendly.App.CoreServicesReady += repository =>
             {
                 _ = AttendlyApiHost.StartAsync(repository);
             };

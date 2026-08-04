@@ -1,16 +1,22 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Attendly"
+             xmlns:conv="using:Attendly.Converters"
              x:Class="Attendly.App"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <conv:StatusChipBrushConverter x:Key="StatusChipBrushConverter"/>
+        <conv:SyncStateToBrushConverter x:Key="SyncStateToBrushConverter"/>
+        <conv:SyncStateToIconKindConverter x:Key="SyncStateToIconKindConverter"/>
+    </Application.Resources>
+
     <Application.Styles>
-         <FluentTheme />
+        <FluentTheme />
         <StyleInclude Source="avares://Attendly/Styles/Styles.axaml"/>
-     </Application.Styles>
-</Application>
+    </Application.Styles>
+</Application>  

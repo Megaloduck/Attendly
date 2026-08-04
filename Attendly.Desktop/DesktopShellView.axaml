@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Attendly.Desktop"
+             xmlns:pairing="using:Attendly.Desktop.Pairing"
+             xmlns:export="using:Attendly.Desktop.Export"
+             x:Class="Attendly.Desktop.DesktopShellView"
+             x:DataType="local:DesktopShellViewModel">
+  <TabControl>
+    <TabItem Header="Perangkat Guru">
+      <pairing:DesktopPairingView DataContext="{Binding Pairing}"/>
+    </TabItem>
+    <TabItem Header="Ekspor">
+      <export:ExportView DataContext="{Binding Export}"/>
+    </TabItem>
+  </TabControl>
+</UserControl>
