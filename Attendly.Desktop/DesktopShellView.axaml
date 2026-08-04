@@ -3,9 +3,13 @@
              xmlns:local="using:Attendly.Desktop"
              xmlns:pairing="using:Attendly.Desktop.Pairing"
              xmlns:export="using:Attendly.Desktop.Export"
+             xmlns:roster="using:Attendly.Desktop.Roster"
              x:Class="Attendly.Desktop.DesktopShellView"
              x:DataType="local:DesktopShellViewModel">
   <TabControl>
+    <TabItem Header="Data Santri">
+      <roster:RosterView DataContext="{Binding Roster}"/>
+    </TabItem>
     <TabItem Header="Perangkat Guru">
       <pairing:DesktopPairingView DataContext="{Binding Pairing}"/>
     </TabItem>

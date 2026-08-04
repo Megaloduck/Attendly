@@ -1,4 +1,4 @@
-    using System;
+using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Attendly.ViewModels;
@@ -14,6 +14,7 @@ public class ViewLocator : IDataTemplate
 
         var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
         var type = Type.GetType(name);
+
         if (type is null)
         {
             // ViewModels can live in platform-specific assemblies (e.g. Attendly.Desktop's
@@ -24,6 +25,9 @@ public class ViewLocator : IDataTemplate
                 if (type is not null) break;
             }
         }
+
+        if (type is not null)
+            return (Control)Activator.CreateInstance(type)!;
 
         return new TextBlock { Text = "Not Found: " + name };
     }
