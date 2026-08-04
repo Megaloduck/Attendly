@@ -6,8 +6,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using Attendly.Data;
+using Attendly.Models;
 using Attendly.Services;
 using Attendly.ViewModels;
 using Attendly.Views;
@@ -24,9 +26,9 @@ public partial class App : Application
     /// <summary>
     /// Lets a platform head override the root Window/View content. Unset
     /// (Android/iOS) falls back to the default teacher flow (MainView).
-    /// Attendly.Desktop sets this to its own admin/pairing shell.
+    /// Attendly.Desktop sets this to its own admin shell.
     /// </summary>
-    public static Func<AttendanceRepository, Control>? RootContentFactory { get; set; }
+    public static Func<AttendanceRepository, IThemeService, Control>? RootContentFactory { get; set; }
 
     public override void Initialize()
     {
@@ -39,23 +41,33 @@ public partial class App : Application
             .AddAttendlyCore()
             .BuildServiceProvider();
 
-        var repository = services.GetRequiredService<AttendanceRepository   >();
+        var repository = services.GetRequiredService<AttendanceRepository>();
+        var themeService = services.GetRequiredService<IThemeService>();
 
-        // One-time table creation. Blocking here is deliberate - it's just
-        // CreateTableAsync calls against a local SQLite file, fast even on
-        // mobile. Revisit with a splash/loading state in Phase 5 if that
-        // stops being true on real devices.
+        // Run on a thread-pool thread so the internal awaits don't try to resume on this
+        // (blocked) UI thread's SynchronizationContext - doing that directly deadlocks on startup.
+        Task.Run(async () =>
+        {
+            await repository.InitializeAsync();
+            await themeService.InitializeAsync();
+        }).GetAwaiter().GetResult();
 
-        // Run on a thread-pool thread so InitializeAsync's internal awaits don't
-        // try to resume on this (blocked) UI thread's SynchronizationContext -
-        // doing that directly deadlocks on startup.
-        Task.Run(() => repository.InitializeAsync()).GetAwaiter().GetResult();
+        // Applied explicitly here (we're back on the UI thread now that GetResult() returned) rather
+        // than relying on ModeChanged, since that event fired from the background thread above.
+        ApplyTheme(themeService.CurrentMode);
+        themeService.ModeChanged += ApplyTheme; // later toggles come from UI-thread button clicks, so this is safe
 
         Repository = repository;
         CoreServicesReady?.Invoke(repository);
 
-        Control rootContent = RootContentFactory?.Invoke(repository)
-            ?? new MainView { DataContext = new MainViewModel(repository, services.GetRequiredService<ILocalSyncService>()) };
+        Control rootContent = RootContentFactory?.Invoke(repository, themeService)
+            ?? new MainView
+            {
+                DataContext = new MainViewModel(
+                    repository,
+                    services.GetRequiredService<ILocalSyncService>(),
+                    themeService)
+            };
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -68,6 +80,12 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void ApplyTheme(ThemeMode mode)
+    {
+        if (Current is null) return;
+        Current.RequestedThemeVariant = mode == ThemeMode.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

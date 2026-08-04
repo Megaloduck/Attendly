@@ -10,13 +10,26 @@
     </Application.DataTemplates>
 
     <Application.Resources>
-        <conv:StatusChipBrushConverter x:Key="StatusChipBrushConverter"/>
-        <conv:SyncStateToBrushConverter x:Key="SyncStateToBrushConverter"/>
-        <conv:SyncStateToIconKindConverter x:Key="SyncStateToIconKindConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#F3F4F6"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#27272A"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <conv:StatusChipBrushConverter x:Key="StatusChipBrushConverter"/>
+            <conv:SyncStateToBrushConverter x:Key="SyncStateToBrushConverter"/>
+            <conv:SyncStateToIconKindConverter x:Key="SyncStateToIconKindConverter"/>
+            <conv:ThemeModeToIconKindConverter x:Key="ThemeModeToIconKindConverter"/>
+            <conv:ThemeModeToLabelConverter x:Key="ThemeModeToLabelConverter"/>
+        </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Attendly/Styles/Styles.axaml"/>
     </Application.Styles>
-</Application>  
+</Application>

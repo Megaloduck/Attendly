@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Attendly.Desktop.Dashboard"
+             x:Class="Attendly.Desktop.Dashboard.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+  <ScrollViewer>
+    <StackPanel Margin="24" Spacing="20">
+      <TextBlock Text="Dashboard" FontSize="24" FontWeight="Bold"/>
+
+      <UniformGrid Columns="4">
+        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="16" Margin="0,0,8,0">
+          <StackPanel>
+            <TextBlock Text="{Binding TotalSantri}" FontSize="28" FontWeight="Bold" Foreground="#2563EB"/>
+            <TextBlock Text="Total Santri" Opacity="0.7" FontSize="13"/>
+          </StackPanel>
+        </Border>
+        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="16" Margin="0,0,8,0">
+          <StackPanel>
+            <TextBlock Text="{Binding TotalLakiLaki}" FontSize="28" FontWeight="Bold" Foreground="#16A34A"/>
+            <TextBlock Text="Laki-laki" Opacity="0.7" FontSize="13"/>
+          </StackPanel>
+        </Border>
+        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="16" Margin="0,0,8,0">
+          <StackPanel>
+            <TextBlock Text="{Binding TotalPerempuan}" FontSize="28" FontWeight="Bold" Foreground="#DB2777"/>
+            <TextBlock Text="Perempuan" Opacity="0.7" FontSize="13"/>
+          </StackPanel>
+        </Border>
+        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="16">
+          <StackPanel>
+            <TextBlock Text="{Binding UnassignedCount}" FontSize="28" FontWeight="Bold" Foreground="#D97706"/>
+            <TextBlock Text="Belum ditentukan" Opacity="0.7" FontSize="13"/>
+          </StackPanel>
+        </Border>
+      </UniformGrid>
+
+      <TextBlock Text="Santri per Kelas" FontSize="16" FontWeight="SemiBold"/>
+      <ItemsControl ItemsSource="{Binding PerTartil}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:TartilCountViewModel">
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+              <TextBlock Grid.Column="0" Text="{Binding DisplayName}"/>
+              <TextBlock Grid.Column="1" Text="{Binding Count}" FontWeight="SemiBold"/>
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <TextBlock Text="{Binding PairedDeviceCount, StringFormat='{}{0} perangkat guru terhubung'}" Opacity="0.7" Margin="0,8,0,0"/>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

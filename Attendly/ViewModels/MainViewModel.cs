@@ -11,6 +11,7 @@ public partial class MainViewModel : ViewModelBase
 {
     private readonly AttendanceRepository _repository;
     private readonly ILocalSyncService _syncService;
+    private readonly IThemeService _themeService;
 
     [ObservableProperty]
     private ViewModelBase _currentPage = null!;
@@ -18,12 +19,20 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private SyncState _syncState;
 
-    public MainViewModel(AttendanceRepository repository, ILocalSyncService syncService)
+    [ObservableProperty]
+    private ThemeMode _themeMode;
+
+    public MainViewModel(AttendanceRepository repository, ILocalSyncService syncService, IThemeService themeService)
     {
         _repository = repository;
         _syncService = syncService;
+        _themeService = themeService;
+
         _syncState = _syncService.CurrentState;
+        _themeMode = _themeService.CurrentMode;
+
         _syncService.StateChanged += state => SyncState = state;
+        _themeService.ModeChanged += mode => ThemeMode = mode;
 
         CurrentPage = new KelasPickerViewModel(_repository, OpenKelasAsync);
     }
@@ -44,5 +53,12 @@ public partial class MainViewModel : ViewModelBase
     private void OpenPairing()
     {
         CurrentPage = new MobilePairingViewModel(_repository, GoBackToKelasPicker);
+    }
+
+    [RelayCommand]
+    private async Task ToggleTheme()
+    {
+        var next = ThemeMode == ThemeMode.Dark ? ThemeMode.Light : ThemeMode.Dark;
+        await _themeService.SetModeAsync(next);
     }
 }

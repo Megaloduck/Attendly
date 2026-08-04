@@ -9,10 +9,13 @@
              x:DataType="vm:MainViewModel">
 
   <Grid RowDefinitions="Auto,*">
-    <Border Grid.Row="0" Background="#111827" Padding="12,8">
-      <Grid ColumnDefinitions="*,Auto">
+<Border Padding="12" Margin="0,0,0,8" CornerRadius="8" Background="{DynamicResource CardBackgroundBrush}">
+    <Grid ColumnDefinitions="*,Auto">
         <TextBlock Grid.Column="0" Text="Attendly" Foreground="White" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <Button Command="{Binding ToggleThemeCommand}" Background="Transparent" Padding="4">
+          <controls:LucideIcon Kind="{Binding ThemeMode, Converter={StaticResource ThemeModeToIconKindConverter}}" Width="18" Height="18" Stroke="White"/>
+          </Button>
           <Button Command="{Binding OpenPairingCommand}" Background="Transparent" Padding="4">
              <controls:LucideIcon Kind="QrCode" Width="18" Height="18" Stroke="White"/>
             </Button>

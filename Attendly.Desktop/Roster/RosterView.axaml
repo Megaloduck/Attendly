@@ -21,7 +21,7 @@
         <ItemsControl ItemsSource="{Binding Rows}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:SantriRowViewModel">
-              <Border Padding="10" Margin="0,0,0,6" CornerRadius="6" Background="#F3F4F6">
+              <Border Padding="10" Margin="0,0,0,6" CornerRadius="6" Background="{DynamicResource CardBackgroundBrush}">
                 <Grid ColumnDefinitions="*,Auto,Auto">
                   <StackPanel Grid.Column="0">
                     <TextBlock Text="{Binding Nama}" FontWeight="SemiBold"/>
@@ -37,8 +37,8 @@
       </ScrollViewer>
     </Grid>
 
-    <Border Grid.Column="1" Background="#FAFAFA" CornerRadius="8" Padding="16"
-            IsVisible="{Binding Editing, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+   <Border Grid.Column="1" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="16"
+             IsVisible="{Binding Editing, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
       <ContentControl Content="{Binding Editing}"/>
     </Border>
   </Grid>

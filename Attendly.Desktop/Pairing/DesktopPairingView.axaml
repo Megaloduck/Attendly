@@ -25,7 +25,7 @@
       <ItemsControl ItemsSource="{Binding PairedDevices}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:PairedDeviceRowViewModel">
-            <Border Padding="10" Margin="0,0,0,6" CornerRadius="6" Background="#F3F4F6">
+            <Border Padding="10" Margin="0,0,0,6" CornerRadius="6" Background="{DynamicResource CardBackgroundBrush}">
               <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0">
                   <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>

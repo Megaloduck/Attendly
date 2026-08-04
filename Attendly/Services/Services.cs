@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IAppPathProvider, DefaultAppPathProvider>();
         services.TryAddSingleton<IClock, SystemClock>();
         services.TryAddSingleton<ILocalSyncService, LocalSyncService>();
+        services.TryAddSingleton<IThemeService, ThemeService>();
 
         // One shared SQLite connection for the app's lifetime.
         services.AddSingleton<AttendanceRepository>();

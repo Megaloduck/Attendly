@@ -38,6 +38,9 @@ public enum LucideIconKind
     Trash2,
     QrCode,
     ScanLine,
+    LayoutDashboard,
+    Sun,
+    Moon,
 }
 
 public class LucideIcon : Path
@@ -94,5 +97,8 @@ internal static class LucideIconData
         [LucideIconKind.Trash2] = "M10 11v6 M14 11v6 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
         [LucideIconKind.QrCode] = "M4,3 H7 A1,1 0 0 1 8,4 V7 A1,1 0 0 1 7,8 H4 A1,1 0 0 1 3,7 V4 A1,1 0 0 1 4,3 Z M17,3 H20 A1,1 0 0 1 21,4 V7 A1,1 0 0 1 20,8 H17 A1,1 0 0 1 16,7 V4 A1,1 0 0 1 17,3 Z M4,16 H7 A1,1 0 0 1 8,17 V20 A1,1 0 0 1 7,21 H4 A1,1 0 0 1 3,20 V17 A1,1 0 0 1 4,16 Z M21 16h-3a2 2 0 0 0-2 2v3 M21 21v.01 M12 7v3a2 2 0 0 1-2 2H7 M3 12h.01 M12 3h.01 M12 16v.01 M16 12h1 M21 12v.01 M12 21v-1",
         [LucideIconKind.ScanLine] = "M3 7V5a2 2 0 0 1 2-2h2 M17 3h2a2 2 0 0 1 2 2v2 M21 17v2a2 2 0 0 1-2 2h-2 M7 21H5a2 2 0 0 1-2-2v-2 M7 12h10",
+        [LucideIconKind.LayoutDashboard] = "M4,3 H9 A1,1 0 0 1 10,4 V11 A1,1 0 0 1 9,12 H4 A1,1 0 0 1 3,11 V4 A1,1 0 0 1 4,3 Z M15,3 H20 A1,1 0 0 1 21,4 V7 A1,1 0 0 1 20,8 H15 A1,1 0 0 1 14,7 V4 A1,1 0 0 1 15,3 Z M15,12 H20 A1,1 0 0 1 21,13 V20 A1,1 0 0 1 20,21 H15 A1,1 0 0 1 14,20 V13 A1,1 0 0 1 15,12 Z M4,16 H9 A1,1 0 0 1 10,17 V20 A1,1 0 0 1 9,21 H4 A1,1 0 0 1 3,20 V17 A1,1 0 0 1 4,16 Z",
+        [LucideIconKind.Sun] = "M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0 M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41",
+        [LucideIconKind.Moon] = "M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401",
     };
 }

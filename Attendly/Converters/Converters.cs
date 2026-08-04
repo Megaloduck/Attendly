@@ -84,3 +84,22 @@ public class SyncStateToIconKindConverter : IValueConverter
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>Icon reflects the theme currently active - Sun while Light, Moon while Dark.</summary>
+public class ThemeModeToIconKindConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+value is ThemeMode.Dark ? LucideIconKind.Moon : LucideIconKind.Sun;
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+throw new NotSupportedException();
+    }
+
+public class ThemeModeToLabelConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+value is ThemeMode.Dark ? "Mode Gelap" : "Mode Terang";
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+throw new NotSupportedException();
+}

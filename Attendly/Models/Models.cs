@@ -1,4 +1,4 @@
-﻿using SQLite;
+﻿    using SQLite;
 using System;
 using System.Collections.Generic;
  using System.Linq;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Attendly.Models;
 
-#region Enums
+    #region Enums
 
 /// <summary>
 /// The seven Tartil levels taught at TPQ Al-Khoirot, matching the class sheets
@@ -117,6 +117,12 @@ public enum SyncState
     Syncing,
     Synced,
     Error,
+}
+
+public enum ThemeMode
+{
+    Light,
+    Dark,
 }
 
 #endregion
@@ -256,4 +262,14 @@ public class PairedDevice
     public long PairedAtTicks { get; set; }
     public long? LastSeenTicks { get; set; }
 }
+ /// <summary>Single-row table (Id is always 1) holding the person's theme preference.</summary>
+[Table("AppSettings")]
+public class AppSettings
+{
+ [PrimaryKey]
+  public int Id { get; set; } = 1;
+
+    public ThemeMode ThemeMode { get; set; } = ThemeMode.Light;
+}
+
  #endregion

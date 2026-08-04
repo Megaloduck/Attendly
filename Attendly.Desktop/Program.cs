@@ -1,17 +1,18 @@
 ﻿    using System;
     using Avalonia;
     using Attendly.Desktop.Hosting;
+using Attendly.Services;
 
 
-    namespace Attendly.Desktop;
+namespace Attendly.Desktop;
 
     sealed class Program
     {
         [STAThread]
         public static void Main(string[] args)
         {
-            Attendly.App.RootContentFactory = repository =>
-                new DesktopShellView { DataContext = new DesktopShellViewModel(repository) };
+    Attendly.App.RootContentFactory = (repository, themeService) =>
+            new DesktopShellView { DataContext = new DesktopShellViewModel(repository, themeService) };
 
         Attendly.App.CoreServicesReady += repository =>
             {

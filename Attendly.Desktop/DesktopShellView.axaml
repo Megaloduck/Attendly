@@ -1,20 +1,43 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Attendly.Desktop"
-             xmlns:pairing="using:Attendly.Desktop.Pairing"
-             xmlns:export="using:Attendly.Desktop.Export"
-             xmlns:roster="using:Attendly.Desktop.Roster"
+             xmlns:controls="using:Attendly.Controls"
              x:Class="Attendly.Desktop.DesktopShellView"
              x:DataType="local:DesktopShellViewModel">
-  <TabControl>
-    <TabItem Header="Data Santri">
-      <roster:RosterView DataContext="{Binding Roster}"/>
-    </TabItem>
-    <TabItem Header="Perangkat Guru">
-      <pairing:DesktopPairingView DataContext="{Binding Pairing}"/>
-    </TabItem>
-    <TabItem Header="Ekspor">
-      <export:ExportView DataContext="{Binding Export}"/>
-    </TabItem>
-  </TabControl>
+  <Grid ColumnDefinitions="220,*">
+    <Border Grid.Column="0" Background="#111827">
+      <Grid RowDefinitions="Auto,*,Auto" Margin="0,16,0,16">
+        <TextBlock Grid.Row="0" Text="Attendly" Foreground="White" FontSize="20" FontWeight="Bold" Margin="20,0,0,24"/>
+
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding NavItems}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="local:NavItemViewModel">
+              <Button Command="{Binding SelectCommand}"
+                      Classes="nav-item"
+                      Classes.active="{Binding IsActive}"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Left">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <controls:LucideIcon Kind="{Binding Icon}" Width="18" Height="18" Stroke="White"/>
+                  <TextBlock Text="{Binding Label}" Foreground="White"/>
+                </StackPanel>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Button Grid.Row="2" Command="{Binding ToggleThemeCommand}"
+                Classes="nav-item"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Left">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <controls:LucideIcon Kind="{Binding ThemeMode, Converter={StaticResource ThemeModeToIconKindConverter}}" Width="18" Height="18" Stroke="White"/>
+            <TextBlock Text="{Binding ThemeMode, Converter={StaticResource ThemeModeToLabelConverter}}" Foreground="White"/>
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Border>
+
+    <ContentControl Grid.Column="1" Content="{Binding CurrentPage}"/>
+  </Grid>
 </UserControl>

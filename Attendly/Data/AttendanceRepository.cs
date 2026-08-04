@@ -54,7 +54,8 @@ public class AttendanceRepository
         await _db.CreateTableAsync<AttendanceRecord>();
         await _db.CreateTableAsync<DevicePairing>();
         await _db.CreateTableAsync<SyncCheckpoint>();
-        await _db.CreateTableAsync<PairedDevice>(); 
+        await _db.CreateTableAsync<PairedDevice>();
+        await _db.CreateTableAsync<AppSettings>();
 
         await EnsureDefaultKelasConfigsAsync();
     }
@@ -264,6 +265,12 @@ public class AttendanceRepository
 
     public Task TouchLastSeenAsync(string token) =>
         _db.ExecuteAsync("UPDATE PairedDevice SET LastSeenTicks = ? WHERE Token = ?", DateTime.UtcNow.Ticks, token);
+
+    // ---------------- App settings ----------------
+    public Task<AppSettings?> GetAppSettingsAsync() =>
+        _db.Table<AppSettings>().Where(s => s.Id == 1).FirstOrDefaultAsync();
+
+    public Task<int> SaveAppSettingsAsync(AppSettings settings) => _db.InsertOrReplaceAsync(settings);
 
     // ---------------- Sync checkpoints ----------------
 
