@@ -181,6 +181,51 @@ public class AttendanceRepository
     }
 
     /// <summary>
+    /// Marks several santri at once with the same status in a single transaction -
+    /// backs the mobile "Tandai Semua Hadir" bulk action.
+    /// </summary>
+    public async Task MarkManyAsync(IEnumerable<int> santriIds, TartilLevel level, DateTime date, AttendanceStatus status)
+    {
+        date = date.Date;
+        var now = DateTime.UtcNow.Ticks;
+
+        await _db.RunInTransactionAsync(conn =>
+        {
+            foreach (var santriId in santriIds)
+            {
+                var existing = conn.Table<AttendanceRecord>()
+                    .Where(r => r.SantriId == santriId && r.Date == date)
+                    .FirstOrDefault();
+
+                if (existing is null)
+                {
+                    conn.Insert(new AttendanceRecord
+                    {
+                        SantriId = santriId,
+                        TartilLevel = level,
+                        Date = date,
+                        Status = status,
+                        DicatatPadaTicks = now,
+                        SyncState = SyncState.Pending,
+                    });
+                }
+                else
+                {
+                    existing.Status = status;
+                    existing.DicatatPadaTicks = now;
+                    existing.SyncState = SyncState.Pending;
+                    conn.Update(existing);
+                }
+            }
+        });
+    }
+
+    /// <summary>How many santri in this Tartil already have an attendance record for the
+    /// given date - drives the "X/Y sudah diabsen" progress badge on the Kelas picker.</summary>
+    public Task<int> GetMarkedCountForDateAsync(TartilLevel level, DateTime date) =>
+        _db.Table<AttendanceRecord>().Where(r => r.TartilLevel == level && r.Date == date.Date).CountAsync();
+
+    /// <summary>
     /// Applies a record coming from the sync API using last-write-wins.
     /// Returns true if the incoming record won and was applied.
     /// </summary>
@@ -229,8 +274,8 @@ public class AttendanceRepository
             .ToListAsync();
     }
     /// <summary>Single-record lookup used by the Desktop API to report what it actually holds after a conflict.</summary>
-   public Task<AttendanceRecord?> GetRecordAsync(int santriId, DateTime date) =>
-        _db.Table<AttendanceRecord>().Where(r => r.SantriId == santriId && r.Date == date.Date).FirstOrDefaultAsync();
+    public Task<AttendanceRecord?> GetRecordAsync(int santriId, DateTime date) =>
+         _db.Table<AttendanceRecord>().Where(r => r.SantriId == santriId && r.Date == date.Date).FirstOrDefaultAsync();
 
     // ---------------- Device pairing ----------------
 

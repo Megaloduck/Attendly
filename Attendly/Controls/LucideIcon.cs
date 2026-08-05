@@ -41,6 +41,9 @@ public enum LucideIconKind
     LayoutDashboard,
     Sun,
     Moon,
+    Search,
+    Calendar,
+    CheckCheck,
 }
 
 public class LucideIcon : Path
@@ -100,5 +103,10 @@ internal static class LucideIconData
         [LucideIconKind.LayoutDashboard] = "M4,3 H9 A1,1 0 0 1 10,4 V11 A1,1 0 0 1 9,12 H4 A1,1 0 0 1 3,11 V4 A1,1 0 0 1 4,3 Z M15,3 H20 A1,1 0 0 1 21,4 V7 A1,1 0 0 1 20,8 H15 A1,1 0 0 1 14,7 V4 A1,1 0 0 1 15,3 Z M15,12 H20 A1,1 0 0 1 21,13 V20 A1,1 0 0 1 20,21 H15 A1,1 0 0 1 14,20 V13 A1,1 0 0 1 15,12 Z M4,16 H9 A1,1 0 0 1 10,17 V20 A1,1 0 0 1 9,21 H4 A1,1 0 0 1 3,20 V17 A1,1 0 0 1 4,16 Z",
         [LucideIconKind.Sun] = "M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0 M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41",
         [LucideIconKind.Moon] = "M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401",
+
+        // --- Added for the mobile UI pass ---
+        [LucideIconKind.Search] = "M21 21 16.66 16.66 M3.0,11.0 a8.0,8.0 0 1,0 16.0,0 a8.0,8.0 0 1,0 -16.0,0",
+        [LucideIconKind.Calendar] = "M8 2v3 M16 2v3 M5,3 H19 A2,2 0 0 1 21,5 V19 A2,2 0 0 1 19,21 H5 A2,2 0 0 1 3,19 V5 A2,2 0 0 1 5,3 Z M3 9h18",
+        [LucideIconKind.CheckCheck] = "M18 6 7 17l-5-5 M22 10 14.5 17.5L13 16",
     };
 }

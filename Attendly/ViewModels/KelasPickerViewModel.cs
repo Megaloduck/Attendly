@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Attendly.Data;
 using Attendly.Models;
 
@@ -15,6 +16,8 @@ public partial class KelasPickerViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isLoading = true;
 
+    public string TodayDisplay => DateTime.Today.ToString("dddd, dd MMMM yyyy");
+
     public ObservableCollection<KelasSummaryViewModel> Kelas { get; } = new();
 
     public KelasPickerViewModel(AttendanceRepository repository, Func<TartilLevel, Task> onSelect)
@@ -24,15 +27,24 @@ public partial class KelasPickerViewModel : ViewModelBase
         _ = LoadAsync();
     }
 
+    [RelayCommand]
+    private Task Refresh() => LoadAsync();
+
     private async Task LoadAsync()
     {
         IsLoading = true;
         Kelas.Clear();
 
+        var today = DateTime.Today;
+
         foreach (TartilLevel level in Enum.GetValues<TartilLevel>())
         {
             var roster = await _repository.GetSantriByTartilAsync(level);
-            Kelas.Add(new KelasSummaryViewModel(level, roster.Count, _onSelect));
+            var config = await _repository.GetKelasConfigAsync(level) ?? new KelasConfig { TartilLevel = level };
+            var isSessionToday = config.IsSessionDay(today.DayOfWeek);
+            var markedCount = await _repository.GetMarkedCountForDateAsync(level, today);
+
+            Kelas.Add(new KelasSummaryViewModel(level, roster.Count, markedCount, isSessionToday, _onSelect));
         }
 
         IsLoading = false;

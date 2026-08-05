@@ -1,20 +1,28 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Attendly.ViewModels"
+             xmlns:controls="using:Attendly.Controls"
              x:Class="Attendly.Views.MobilePairingView"
              x:DataType="vm:MobilePairingViewModel">
-  <StackPanel Margin="20" Spacing="12">
+  <StackPanel Margin="20" Spacing="14">
     <TextBlock Text="Hubungkan ke Desktop" FontSize="20" FontWeight="Bold"/>
 
-    <TextBlock IsVisible="{Binding IsPaired}"
-               Text="{Binding PairedDesktopLabel, StringFormat='Terhubung ke {0}'}"
-               Foreground="Green"/>
+    <Border Background="#DCFCE7" CornerRadius="10" Padding="12" IsVisible="{Binding IsPaired}">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <controls:LucideIcon Kind="CircleCheck" Width="18" Height="18" Stroke="#166534"/>
+        <TextBlock Text="{Binding PairedDesktopLabel, StringFormat='Terhubung ke {0}'}" Foreground="#166534" VerticalAlignment="Center"/>
+      </StackPanel>
+    </Border>
 
-    <TextBlock Text="Masukkan kode dari layar 'Hubungkan Perangkat Guru' di Desktop:" TextWrapping="Wrap"/>
-    <TextBox Text="{Binding PairingCodeInput}" Watermark="ip:port:token"/>
-    <Button Content="Hubungkan" Command="{Binding ConnectCommand}"/>
+    <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="16">
+      <StackPanel Spacing="10">
+        <TextBlock Text="Masukkan kode dari layar 'Hubungkan Perangkat Guru' di Desktop:" TextWrapping="Wrap" FontSize="13"/>
+        <TextBox Text="{Binding PairingCodeInput}" Watermark="ip:port:token"/>
+        <Button Content="Hubungkan" Command="{Binding ConnectCommand}" Classes="primary" HorizontalAlignment="Left"/>
+      </StackPanel>
+    </Border>
 
-    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Opacity="0.8"/>
+    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Opacity="0.8" FontSize="13"/>
 
     <Button Content="Selesai" Command="{Binding DoneCommand}" HorizontalAlignment="Left"/>
   </StackPanel>

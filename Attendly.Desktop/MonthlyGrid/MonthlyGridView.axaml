@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Attendly.Desktop.MonthlyGrid"
+             xmlns:exp="using:Attendly.Desktop.Export"
+             x:Class="Attendly.Desktop.MonthlyGrid.MonthlyGridView"
+             x:DataType="vm:MonthlyGridViewModel">
+  <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="24">
+    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+      <TextBlock Text="Absensi Bulanan" FontSize="24" FontWeight="Bold"/>
+      <TextBlock Text="Rekap kehadiran satu kelas dalam satu bulan." Opacity="0.7"/>
+    </StackPanel>
+
+    <Grid Grid.Row="1" ColumnDefinitions="220,100,100,*" Margin="0,0,0,12">
+      <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableTartil}" SelectedItem="{Binding SelectedTartil}" Margin="0,0,8,0" HorizontalAlignment="Stretch">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="exp:TartilOption">
+            <TextBlock Text="{Binding Label}"/>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <NumericUpDown Grid.Column="1" Value="{Binding SelectedMonth}" Minimum="1" Maximum="12" Margin="0,0,8,0"/>
+      <NumericUpDown Grid.Column="2" Value="{Binding SelectedYear}" Minimum="2020" Maximum="2100"/>
+    </Grid>
+
+    <!-- Legend: status share across the whole class for the selected month, Scholarly-style chips -->
+    <ItemsControl Grid.Row="2" ItemsSource="{Binding LegendItems}" Margin="0,0,0,16">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Orientation="Horizontal" Spacing="10"/>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:LegendItemViewModel">
+          <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="20" Padding="10,6">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Ellipse Width="8" Height="8" Fill="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"/>
+              <TextBlock Text="{Binding DisplayText}" FontSize="12"/>
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <!-- The actual grid is built in MonthlyGridView.axaml.cs, since its column count
+         depends on the days-in-month and there's no DataGrid package referenced. -->
+    <Border Grid.Row="3" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" Padding="4">
+      <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <Grid x:Name="TableGrid"/>
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</UserControl>
