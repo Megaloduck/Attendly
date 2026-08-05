@@ -1,15 +1,14 @@
-﻿using Attendly.Data;
-using Attendly.Models;
-using Attendly.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Attendly.Data;
+using Attendly.Models;
+using Attendly.Services;
 
 namespace Attendly.ViewModels;
 
@@ -77,7 +76,7 @@ public partial class AttendanceViewModel : ViewModelBase
         foreach (var santri in roster)
         {
             recordsBySantriId.TryGetValue(santri.Id, out var record);
-            var row = new SantriAttendanceRowViewModel(santri, record?.Status, status => MarkAsync(santri.Id, status));
+            var row = new SantriAttendanceRowViewModel(santri, record?.Status, status => MarkAsync(santri.Id, santri.NamaPanggilan, status));
             row.PropertyChanged += OnRowChanged;
             _allRows.Add(row);
         }
@@ -130,9 +129,9 @@ public partial class AttendanceViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsSearchEmpty));
     }
 
-    private async Task MarkAsync(int santriId, AttendanceStatus status)
+    private async Task MarkAsync(int santriId, string namaPanggilan, AttendanceStatus status)
     {
-        await _repository.MarkAttendanceAsync(santriId, _level, Date, status);
+        await _repository.MarkAttendanceAsync(santriId, namaPanggilan, _level, Date, status);
         _syncService.RequestSync();
     }
 
@@ -165,7 +164,7 @@ public partial class AttendanceViewModel : ViewModelBase
         var unmarked = _allRows.Where(r => r.Status is null).ToList();
         if (unmarked.Count == 0) return;
 
-        await _repository.MarkManyAsync(unmarked.Select(r => r.SantriId), _level, Date, AttendanceStatus.Hadir);
+        await _repository.MarkManyAsync(unmarked.Select(r => (r.SantriId, r.NamaPanggilan)), _level, Date, AttendanceStatus.Hadir);
 
         foreach (var row in unmarked)
             row.Status = AttendanceStatus.Hadir;

@@ -6,12 +6,12 @@ using Attendly.Controls;
 using Attendly.Data;
 using Attendly.Desktop.Dashboard;
 using Attendly.Desktop.Export;
-using Attendly.Desktop.MonthlyGrid;
 using Attendly.Desktop.Pairing;
 using Attendly.Desktop.Roster;
 using Attendly.Models;
 using Attendly.Services;
 using Attendly.ViewModels;
+using DesktopActivityLogViewModel = Attendly.Desktop.ActivityLog.ActivityLogViewModel;
 
 namespace Attendly.Desktop;
 
@@ -34,16 +34,16 @@ public partial class DesktopShellViewModel : ViewModelBase
         themeService.ModeChanged += mode => ThemeMode = mode;
 
         var dashboard = new DashboardViewModel(repository);
-        var monthlyGrid = new MonthlyGridViewModel(repository);
         var roster = new RosterViewModel(repository);
+        var activityLog = new DesktopActivityLogViewModel(repository);
         var pairing = new DesktopPairingViewModel(repository);
         var export = new ExportViewModel(new AttendanceExportService(repository));
 
         var pages = new (string Label, LucideIconKind Icon, ViewModelBase Page)[]
         {
             ("Dashboard", LucideIconKind.LayoutDashboard, dashboard),
-            ("Absensi Bulanan", LucideIconKind.Calendar, monthlyGrid),
             ("Data Santri", LucideIconKind.Users, roster),
+            ("Riwayat", LucideIconKind.Clock, activityLog),
             ("Perangkat Guru", LucideIconKind.QrCode, pairing),
             ("Ekspor", LucideIconKind.FileText, export),
         };
@@ -53,13 +53,12 @@ public partial class DesktopShellViewModel : ViewModelBase
             NavItemViewModel? item = null;
             item = new NavItemViewModel(label, icon, async () =>
             {
-                // Both Dashboard and the monthly grid can go stale while parked on
-                // another tab (roster edits, new attendance synced in from mobile),
-                // so refresh whenever either is opened.
+                // Dashboard and Riwayat can go stale while parked on another tab
+                // (roster edits, new syncs), so refresh them every time they're opened.
                 if (page == dashboard)
                     await dashboard.LoadAsync();
-                else if (page == monthlyGrid)
-                    await monthlyGrid.LoadAsync();
+                else if (page == activityLog)
+                    await activityLog.Refresh();
 
                 Navigate(page, item!);
             });

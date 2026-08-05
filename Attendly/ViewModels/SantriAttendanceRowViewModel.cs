@@ -18,15 +18,7 @@ public partial class SantriAttendanceRowViewModel : ViewModelBase
     [ObservableProperty]
     private AttendanceStatus? _status;
 
-    public string StatusLabel => Status switch
-    {
-        AttendanceStatus.Hadir => "Hadir",
-        AttendanceStatus.Alpha => "Alpha",
-        AttendanceStatus.Izin => "Izin",
-        AttendanceStatus.Sakit => "Sakit",
-        AttendanceStatus.Libur => "Libur",
-        _ => "Belum diabsen",
-    };
+    public string StatusLabel => Status?.ToDisplayLabel() ?? "Belum diabsen";
 
     public SantriAttendanceRowViewModel(Santri santri, AttendanceStatus? status, Func<AttendanceStatus, Task> onMark)
     {

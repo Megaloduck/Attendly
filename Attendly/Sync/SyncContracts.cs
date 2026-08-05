@@ -39,9 +39,25 @@ public class AttendanceRecordDto
     public long DicatatPadaTicks { get; set; }
 }
 
+/// <summary>One "what/who/when" entry pushed alongside AttendanceRecordDto - see
+/// AttendanceChangeLogEntry for field meanings.</summary>
+public class ChangeLogEntryDto
+{
+    public string ChangeId { get; set; } = string.Empty;
+    public int SantriId { get; set; }
+    public string SantriNamaPanggilan { get; set; } = string.Empty;
+    public TartilLevel TartilLevel { get; set; }
+    public DateTime AttendanceDate { get; set; }
+    public char? OldStatusCode { get; set; }
+    public char NewStatusCode { get; set; }
+    public string TeacherName { get; set; } = string.Empty;
+    public long ChangedAtTicks { get; set; }
+}
+
 public class SyncPushRequest
 {
     public List<AttendanceRecordDto> Records { get; set; } = new();
+    public List<ChangeLogEntryDto> ChangeLogEntries { get; set; } = new();
 }
 
 /// <summary>Records the client pushed that lost the last-write-wins comparison - here's what Desktop actually has instead.</summary>

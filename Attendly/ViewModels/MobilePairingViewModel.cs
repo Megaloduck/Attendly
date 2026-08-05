@@ -10,13 +10,16 @@ namespace Attendly.ViewModels;
 
 /// <summary>
 /// Mobile side of pairing: manual entry of the ip:port:token code shown on
-/// Desktop. QR scanning is a fast-follow once the camera/decode spike lands -
-/// this screen is fully functional without it in the meantime.
+/// Desktop, plus the teacher's name (the "who" for the activity log - stamped
+/// onto every attendance change this device makes from now on).
 /// </summary>
 public partial class MobilePairingViewModel : ViewModelBase
 {
     private readonly AttendanceRepository _repository;
     private readonly Action _goBack;
+
+    [ObservableProperty]
+    private string _teacherName = string.Empty;
 
     [ObservableProperty]
     private string _pairingCodeInput = string.Empty;
@@ -43,11 +46,19 @@ public partial class MobilePairingViewModel : ViewModelBase
         IsPaired = pairing?.IsPaired == true;
         if (IsPaired && pairing is not null)
             PairedDesktopLabel = $"{pairing.DesktopIp}:{pairing.DesktopPort}";
+        if (!string.IsNullOrWhiteSpace(pairing?.TeacherName))
+            TeacherName = pairing!.TeacherName!;
     }
 
     [RelayCommand]
     private async Task Connect()
     {
+        if (string.IsNullOrWhiteSpace(TeacherName))
+        {
+            StatusMessage = "Masukkan nama Anda terlebih dahulu.";
+            return;
+        }
+
         StatusMessage = "Menghubungkan...";
 
         if (!PairingCode.TryParse(PairingCodeInput, out var ip, out var port, out var token))
@@ -75,7 +86,7 @@ public partial class MobilePairingViewModel : ViewModelBase
             return;
         }
 
-        await _repository.SavePairingAsync(ip, port, token);
+        await _repository.SavePairingAsync(ip, port, token, TeacherName.Trim());
         IsPaired = true;
         PairedDesktopLabel = $"{ip}:{port}";
         StatusMessage = "Berhasil terhubung!";
@@ -83,4 +94,4 @@ public partial class MobilePairingViewModel : ViewModelBase
 
     [RelayCommand]
     private void Done() => _goBack();
-}
+}       

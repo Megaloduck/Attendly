@@ -21,7 +21,7 @@ public static class AttendlyApiHost
     public static async Task StartAsync(AttendanceRepository repository)
     {
         var builder = WebApplication.CreateBuilder();
-        
+
 
         var app = builder.Build();
         app.Urls.Add($"http://0.0.0.0:{Port}");
@@ -125,6 +125,26 @@ public static class AttendlyApiHost
                         });
                     }
                 }
+            }
+
+            // Append-only, deduped by ChangeId - safe even if this push is retried.
+            // DTOs carry status as char over the wire; the local table stores the
+            // enum directly (sqlite-net can't map System.Char to a column type).
+            foreach (var dto in request.ChangeLogEntries)
+            {
+                await repository.ApplyIncomingChangeLogEntryAsync(new AttendanceChangeLogEntry
+                {
+                    ChangeId = dto.ChangeId,
+                    SantriId = dto.SantriId,
+                    SantriNamaPanggilan = dto.SantriNamaPanggilan,
+                    TartilLevel = dto.TartilLevel,
+                    AttendanceDate = dto.AttendanceDate,
+                    OldStatus = dto.OldStatusCode is { } oldCode ? AttendanceStatusExtensions.FromCode(oldCode) : null,
+                    NewStatus = AttendanceStatusExtensions.FromCode(dto.NewStatusCode),
+                    TeacherName = dto.TeacherName,
+                    ChangedAtTicks = dto.ChangedAtTicks,
+                    Synced = true,
+                });
             }
 
             return Results.Ok(new SyncPushResponse { ServerWins = serverWins });

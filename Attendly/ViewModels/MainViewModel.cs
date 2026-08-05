@@ -56,6 +56,12 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void OpenActivityLog()
+    {
+        CurrentPage = new ActivityLogViewModel(_repository, GoBackToKelasPicker);
+    }
+
+    [RelayCommand]
     private async Task ToggleTheme()
     {
         var next = ThemeMode == ThemeMode.Dark ? ThemeMode.Light : ThemeMode.Dark;

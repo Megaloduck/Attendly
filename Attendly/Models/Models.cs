@@ -1,13 +1,13 @@
-﻿    using SQLite;
+﻿using SQLite;
 using System;
 using System.Collections.Generic;
- using System.Linq;
- using System.Text;
- using System.Threading.Tasks;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Attendly.Models;
 
-    #region Enums
+#region Enums
 
 /// <summary>
 /// The seven Tartil levels taught at TPQ Al-Khoirot, matching the class sheets
@@ -105,6 +105,17 @@ public static class AttendanceStatusExtensions
         'S' => AttendanceStatus.Sakit,
         'O' => AttendanceStatus.Libur,
         _ => throw new ArgumentOutOfRangeException(nameof(code), code, "Unknown attendance code."),
+    };
+
+    /// <summary>Indonesian display label - shared by the attendance rows and the activity log.</summary>
+    public static string ToDisplayLabel(this AttendanceStatus status) => status switch
+    {
+        AttendanceStatus.Hadir => "Hadir",
+        AttendanceStatus.Alpha => "Alpha",
+        AttendanceStatus.Izin => "Izin",
+        AttendanceStatus.Sakit => "Sakit",
+        AttendanceStatus.Libur => "Libur",
+        _ => "?",
     };
 }
 
@@ -228,6 +239,10 @@ public class DevicePairing
     public int? DesktopPort { get; set; }
     public string? PairingToken { get; set; }
     public bool IsPaired { get; set; }
+
+    /// <summary>The teacher's own name, entered once during pairing. Stamped onto every
+    /// AttendanceChangeLogEntry this device writes - this is the "who" in the activity log.</summary>
+    public string? TeacherName { get; set; }
 }
 
 /// <summary>Tracks the last successful sync per Tartil/month, for incremental pulls.</summary>
@@ -250,7 +265,7 @@ public class SyncCheckpoint
 /// </summary>
 [Table("PairedDevice")]
 public class PairedDevice
-{   
+{
     [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
 
@@ -262,14 +277,59 @@ public class PairedDevice
     public long PairedAtTicks { get; set; }
     public long? LastSeenTicks { get; set; }
 }
- /// <summary>Single-row table (Id is always 1) holding the person's theme preference.</summary>
+/// <summary>Single-row table (Id is always 1) holding the person's theme preference.</summary>
 [Table("AppSettings")]
 public class AppSettings
 {
- [PrimaryKey]
-  public int Id { get; set; } = 1;
+    [PrimaryKey]
+    public int Id { get; set; } = 1;
 
     public ThemeMode ThemeMode { get; set; } = ThemeMode.Light;
 }
 
- #endregion
+/// <summary>
+/// One "what/who/when" entry: a single attendance mark or change. Written locally on
+/// whichever mobile device made the change, then pushed to Desktop alongside the
+/// AttendanceRecord itself so admin has a full cross-teacher activity log.
+/// Append-only - never updated after insert, only ever read.
+/// </summary>
+[Table("AttendanceChangeLog")]
+public class AttendanceChangeLogEntry
+{
+    [PrimaryKey, AutoIncrement]
+    public int Id { get; set; }
+
+    /// <summary>Client-generated (Guid) at the moment of the change. Lets Desktop dedupe
+    /// entries if a sync push is retried, since AttendanceRecord's own PK is per-device.</summary>
+    [Indexed(Name = "UX_ChangeLog_ChangeId", Unique = true)]
+    [NotNull]
+    public string ChangeId { get; set; } = string.Empty;
+
+    public int SantriId { get; set; }
+
+    /// <summary>Denormalized so the log still reads correctly even if the santri is later renamed.</summary>
+    public string SantriNamaPanggilan { get; set; } = string.Empty;
+
+    public TartilLevel TartilLevel { get; set; }
+
+    /// <summary>The attendance day being marked/changed (not necessarily today - date nav lets
+    /// a teacher correct a past day).</summary>
+    public DateTime AttendanceDate { get; set; }
+
+    /// <summary>Null if this was the first time this santri/day was marked. Stored as the
+    /// AttendanceStatus enum, not char - sqlite-net-pcl's ORM doesn't know how to map
+    /// System.Char to a SQL column type, only enums/strings/numerics/etc.</summary>
+    public AttendanceStatus? OldStatus { get; set; }
+    public AttendanceStatus NewStatus { get; set; }
+
+    public string TeacherName { get; set; } = string.Empty;
+
+    /// <summary>UTC ticks - when the change actually happened (the "when").</summary>
+    public long ChangedAtTicks { get; set; }
+
+    /// <summary>Mobile-only: whether this entry has been pushed to Desktop yet.
+    /// Meaningless (always true) on Desktop's own copy of the table.</summary>
+    public bool Synced { get; set; }
+}
+
+#endregion

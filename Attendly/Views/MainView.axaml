@@ -9,12 +9,13 @@
              x:DataType="vm:MainViewModel">
 
   <Grid RowDefinitions="Auto,*">
-    <!-- Solid brand color instead of CardBackgroundBrush - that resource is light gray
-         in Light theme, which made the white header text/icons invisible. -->
     <Border Padding="14,12" Background="#2563EB">
       <Grid ColumnDefinitions="*,Auto">
         <TextBlock Grid.Column="0" Text="Attendly" Foreground="White" FontWeight="Bold" FontSize="17" VerticalAlignment="Center"/>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <Button Command="{Binding OpenActivityLogCommand}" Background="Transparent" Padding="4">
+            <controls:LucideIcon Kind="Clock" Width="18" Height="18" Stroke="White"/>
+          </Button>
           <Button Command="{Binding ToggleThemeCommand}" Background="Transparent" Padding="4">
             <controls:LucideIcon Kind="{Binding ThemeMode, Converter={StaticResource ThemeModeToIconKindConverter}}" Width="18" Height="18" Stroke="White"/>
           </Button>

@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Attendly.Desktop.ActivityLog"
+             xmlns:coreVm="using:Attendly.ViewModels"
+             xmlns:controls="using:Attendly.Controls"
+             x:Class="Attendly.Desktop.ActivityLog.ActivityLogView"
+             x:DataType="vm:ActivityLogViewModel">
+  <Grid RowDefinitions="Auto,*" Margin="24">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,16">
+      <TextBlock Grid.Column="0" Text="Riwayat Perubahan" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
+      <TextBox Grid.Column="1" Width="240" Watermark="Cari guru atau santri..." Text="{Binding SearchText}" Margin="0,0,8,0"/>
+      <Button Grid.Column="2" Command="{Binding RefreshCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <controls:LucideIcon Kind="RefreshCw" Width="16" Height="16"/>
+          <TextBlock Text="Refresh"/>
+        </StackPanel>
+      </Button>
+    </Grid>
+
+    <Grid Grid.Row="1">
+      <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding Entries}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="coreVm:ActivityLogRowViewModel">
+              <Border Padding="12" Margin="0,0,0,8" CornerRadius="8" Background="{DynamicResource CardBackgroundBrush}">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <Ellipse Grid.Column="0" Width="10" Height="10" Fill="{Binding StatusColor}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                  <StackPanel Grid.Column="1">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Grid.Column="0" Text="{Binding SantriNamaPanggilan}" FontWeight="SemiBold" FontSize="14"/>
+                      <TextBlock Grid.Column="1" Text="{Binding StatusChangeText}" FontSize="13" Opacity="0.8"/>
+                    </Grid>
+                    <TextBlock Text="{Binding MetaLine}" FontSize="12" Opacity="0.55" Margin="0,4,0,0"/>
+                  </StackPanel>
+
+                  <TextBlock Grid.Column="2" Text="{Binding TimeDisplay}" FontSize="12" Opacity="0.5" VerticalAlignment="Top"/>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <TextBlock Text="Memuat..." IsVisible="{Binding IsLoading}" Opacity="0.6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      <TextBlock Text="Belum ada perubahan tercatat" IsVisible="{Binding IsEmpty}" Opacity="0.5" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Grid>
+  </Grid>
+</UserControl>

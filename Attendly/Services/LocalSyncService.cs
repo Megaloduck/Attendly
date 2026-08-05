@@ -65,8 +65,10 @@ public class LocalSyncService : ILocalSyncService, IDisposable
 
         try
         {
-            var pending = await _repository.GetPendingSyncRecordsAsync();
-            if (pending.Count == 0)
+            var pendingRecords = await _repository.GetPendingSyncRecordsAsync();
+            var pendingChangeLog = await _repository.GetPendingChangeLogEntriesAsync();
+
+            if (pendingRecords.Count == 0 && pendingChangeLog.Count == 0)
             {
                 CurrentState = SyncState.Synced;
                 return;
@@ -78,14 +80,26 @@ public class LocalSyncService : ILocalSyncService, IDisposable
 
             var request = new SyncPushRequest
             {
-                Records = pending.Select(r => new AttendanceRecordDto
+                Records = pendingRecords.Select(r => new AttendanceRecordDto
                 {
                     SantriId = r.SantriId,
                     TartilLevel = r.TartilLevel,
                     Date = r.Date,
                     StatusCode = r.Status.ToCode(),
                     DicatatPadaTicks = r.DicatatPadaTicks,
-                }).ToList()
+                }).ToList(),
+                ChangeLogEntries = pendingChangeLog.Select(c => new ChangeLogEntryDto
+                {
+                    ChangeId = c.ChangeId,
+                    SantriId = c.SantriId,
+                    SantriNamaPanggilan = c.SantriNamaPanggilan,
+                    TartilLevel = c.TartilLevel,
+                    AttendanceDate = c.AttendanceDate,
+                    OldStatusCode = c.OldStatus?.ToCode(),
+                    NewStatusCode = c.NewStatus.ToCode(),
+                    TeacherName = c.TeacherName,
+                    ChangedAtTicks = c.ChangedAtTicks,
+                }).ToList(),
             };
 
             var response = await client.PostAsJsonAsync("/api/attendance/sync", request);
@@ -96,7 +110,8 @@ public class LocalSyncService : ILocalSyncService, IDisposable
             }
 
             var result = await response.Content.ReadFromJsonAsync<SyncPushResponse>();
-            await _repository.MarkSyncedAsync(pending.Select(r => r.Id));
+            await _repository.MarkSyncedAsync(pendingRecords.Select(r => r.Id));
+            await _repository.MarkChangeLogSyncedAsync(pendingChangeLog.Select(c => c.Id));
 
             if (result?.ServerWins is { Count: > 0 } serverWins)
             {

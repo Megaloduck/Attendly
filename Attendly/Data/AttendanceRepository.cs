@@ -56,6 +56,7 @@ public class AttendanceRepository
         await _db.CreateTableAsync<SyncCheckpoint>();
         await _db.CreateTableAsync<PairedDevice>();
         await _db.CreateTableAsync<AppSettings>();
+        await _db.CreateTableAsync<AttendanceChangeLogEntry>();
 
         await EnsureDefaultKelasConfigsAsync();
     }
@@ -149,9 +150,10 @@ public class AttendanceRepository
     }
 
     /// <summary>
-    /// Marks (or updates) one santri's status for one day.
+    /// Marks (or updates) one santri's status for one day, and appends a
+    /// what/who/when entry to the activity log.
     /// </summary>
-    public async Task MarkAttendanceAsync(int santriId, TartilLevel level, DateTime date, AttendanceStatus status)
+    public async Task MarkAttendanceAsync(int santriId, string namaPanggilan, TartilLevel level, DateTime date, AttendanceStatus status)
     {
         date = date.Date;
         var existing = await _db.Table<AttendanceRecord>()
@@ -159,6 +161,7 @@ public class AttendanceRepository
             .FirstOrDefaultAsync();
 
         var now = DateTime.UtcNow.Ticks;
+        var oldStatus = existing?.Status;
 
         if (existing is null)
         {
@@ -171,31 +174,39 @@ public class AttendanceRepository
                 DicatatPadaTicks = now,
                 SyncState = SyncState.Pending,
             });
-            return;
+        }
+        else
+        {
+            existing.Status = status;
+            existing.DicatatPadaTicks = now;
+            existing.SyncState = SyncState.Pending;
+            await _db.UpdateAsync(existing);
         }
 
-        existing.Status = status;
-        existing.DicatatPadaTicks = now;
-        existing.SyncState = SyncState.Pending;
-        await _db.UpdateAsync(existing);
+        await LogChangeAsync(santriId, namaPanggilan, level, date, oldStatus, status);
     }
 
     /// <summary>
     /// Marks several santri at once with the same status in a single transaction -
-    /// backs the mobile "Tandai Semua Hadir" bulk action.
+    /// backs the mobile "Tandai Semua Hadir" bulk action. Logs one activity entry per santri.
     /// </summary>
-    public async Task MarkManyAsync(IEnumerable<int> santriIds, TartilLevel level, DateTime date, AttendanceStatus status)
+    public async Task MarkManyAsync(IEnumerable<(int SantriId, string NamaPanggilan)> santri, TartilLevel level, DateTime date, AttendanceStatus status)
     {
         date = date.Date;
         var now = DateTime.UtcNow.Ticks;
+        var pairing = await GetPairingAsync();
+        var teacherName = string.IsNullOrWhiteSpace(pairing?.TeacherName) ? "Tidak diketahui" : pairing!.TeacherName!;
+        var santriList = santri.ToList();
 
         await _db.RunInTransactionAsync(conn =>
         {
-            foreach (var santriId in santriIds)
+            foreach (var (santriId, namaPanggilan) in santriList)
             {
                 var existing = conn.Table<AttendanceRecord>()
                     .Where(r => r.SantriId == santriId && r.Date == date)
                     .FirstOrDefault();
+
+                var oldStatus = existing?.Status;
 
                 if (existing is null)
                 {
@@ -216,14 +227,67 @@ public class AttendanceRepository
                     existing.SyncState = SyncState.Pending;
                     conn.Update(existing);
                 }
+
+                conn.Insert(new AttendanceChangeLogEntry
+                {
+                    ChangeId = Guid.NewGuid().ToString("N"),
+                    SantriId = santriId,
+                    SantriNamaPanggilan = namaPanggilan,
+                    TartilLevel = level,
+                    AttendanceDate = date,
+                    OldStatus = oldStatus,
+                    NewStatus = status,
+                    TeacherName = teacherName,
+                    ChangedAtTicks = now,
+                });
             }
         });
     }
 
-    /// <summary>How many santri in this Tartil already have an attendance record for the
-    /// given date - drives the "X/Y sudah diabsen" progress badge on the Kelas picker.</summary>
-    public Task<int> GetMarkedCountForDateAsync(TartilLevel level, DateTime date) =>
-        _db.Table<AttendanceRecord>().Where(r => r.TartilLevel == level && r.Date == date.Date).CountAsync();
+    private async Task LogChangeAsync(int santriId, string namaPanggilan, TartilLevel level, DateTime date, AttendanceStatus? oldStatus, AttendanceStatus newStatus)
+    {
+        var pairing = await GetPairingAsync();
+        var teacherName = string.IsNullOrWhiteSpace(pairing?.TeacherName) ? "Tidak diketahui" : pairing!.TeacherName!;
+
+        await _db.InsertAsync(new AttendanceChangeLogEntry
+        {
+            ChangeId = Guid.NewGuid().ToString("N"),
+            SantriId = santriId,
+            SantriNamaPanggilan = namaPanggilan,
+            TartilLevel = level,
+            AttendanceDate = date.Date,
+            OldStatus = oldStatus,
+            NewStatus = newStatus,
+            TeacherName = teacherName,
+            ChangedAtTicks = DateTime.UtcNow.Ticks,
+        });
+    }
+
+    /// <summary>Most recent activity, newest first - backs both the mobile "Riwayat" screen
+    /// (this device's own changes) and Desktop's aggregated admin view.</summary>
+    public Task<List<AttendanceChangeLogEntry>> GetRecentChangeLogAsync(int take = 100) =>
+        _db.Table<AttendanceChangeLogEntry>().OrderByDescending(c => c.ChangedAtTicks).Take(take).ToListAsync();
+
+    public Task<List<AttendanceChangeLogEntry>> GetPendingChangeLogEntriesAsync() =>
+        _db.Table<AttendanceChangeLogEntry>().Where(c => !c.Synced).ToListAsync();
+
+    public async Task MarkChangeLogSyncedAsync(IEnumerable<int> ids)
+    {
+        foreach (var id in ids)
+            await _db.ExecuteAsync("UPDATE AttendanceChangeLog SET Synced = 1 WHERE Id = ?", id);
+    }
+
+    /// <summary>Desktop-side: applies an incoming change-log entry from a mobile push,
+    /// deduped by ChangeId so a retried sync push never double-logs.</summary>
+    public async Task ApplyIncomingChangeLogEntryAsync(AttendanceChangeLogEntry incoming)
+    {
+        var existing = await _db.Table<AttendanceChangeLogEntry>()
+            .Where(c => c.ChangeId == incoming.ChangeId)
+            .FirstOrDefaultAsync();
+
+        if (existing is null)
+            await _db.InsertAsync(incoming);
+    }
 
     /// <summary>
     /// Applies a record coming from the sync API using last-write-wins.
@@ -277,12 +341,17 @@ public class AttendanceRepository
     public Task<AttendanceRecord?> GetRecordAsync(int santriId, DateTime date) =>
          _db.Table<AttendanceRecord>().Where(r => r.SantriId == santriId && r.Date == date.Date).FirstOrDefaultAsync();
 
+    /// <summary>How many santri in this Tartil already have an attendance record for the
+    /// given date - drives the "X/Y sudah diabsen" progress badge on the Kelas picker.</summary>
+    public Task<int> GetMarkedCountForDateAsync(TartilLevel level, DateTime date) =>
+        _db.Table<AttendanceRecord>().Where(r => r.TartilLevel == level && r.Date == date.Date).CountAsync();
+
     // ---------------- Device pairing ----------------
 
     public Task<DevicePairing?> GetPairingAsync() =>
         _db.Table<DevicePairing>().Where(p => p.Id == 1).FirstOrDefaultAsync();
 
-    public Task<int> SavePairingAsync(string ip, int port, string token) =>
+    public Task<int> SavePairingAsync(string ip, int port, string token, string teacherName) =>
         _db.InsertOrReplaceAsync(new DevicePairing
         {
             Id = 1,
@@ -290,10 +359,20 @@ public class AttendanceRepository
             DesktopPort = port,
             PairingToken = token,
             IsPaired = true,
+            TeacherName = teacherName,
         });
 
-    public Task<int> ClearPairingAsync() =>
-        _db.InsertOrReplaceAsync(new DevicePairing { Id = 1, IsPaired = false });
+    public async Task<int> ClearPairingAsync()
+    {
+        // Preserve the teacher's name across a re-pair - no need to make them retype it.
+        var existing = await GetPairingAsync();
+        return await _db.InsertOrReplaceAsync(new DevicePairing
+        {
+            Id = 1,
+            IsPaired = false,
+            TeacherName = existing?.TeacherName,
+        });
+    }
 
     // ---------------- Desktop's paired-device registry ----------------
 
