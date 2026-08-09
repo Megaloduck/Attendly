@@ -13,10 +13,17 @@ namespace Attendly.Services;
 public interface ILocalSyncService
 {
     SyncState CurrentState { get; }
+    DateTime? LastSyncedAt { get; }
     event Action<SyncState>? StateChanged;
 
     /// <summary>Call after any local write; debounces 2s before pushing to Desktop.</summary>
     void RequestSync();
+
+    /// <summary>Deliberate, immediate sync - bypasses the debounce, pushes any pending
+    /// records/change-log entries, then pulls the latest roster. Backs the Dashboard's
+    /// "Sinkronkan Sekarang" button, for teachers who only connect occasionally
+    /// (e.g. once a month) rather than relying on the write-triggered debounce.</summary>
+    Task SyncNowAsync();
 }
 
 /// <summary>
@@ -36,6 +43,8 @@ public class LocalSyncService : ILocalSyncService, IDisposable
         private set { _state = value; StateChanged?.Invoke(value); }
     }
 
+    public DateTime? LastSyncedAt { get; private set; }
+
     public event Action<SyncState>? StateChanged;
 
     public LocalSyncService(AttendanceRepository repository)
@@ -50,6 +59,13 @@ public class LocalSyncService : ILocalSyncService, IDisposable
         CurrentState = SyncState.Pending;
         _debounceTimer.Stop();
         _debounceTimer.Start();
+    }
+
+    public async Task SyncNowAsync()
+    {
+        _debounceTimer.Stop(); // a manual sync supersedes any pending debounce
+        await PushPendingAsync();
+        await PullRosterAsync();
     }
 
     private async Task PushPendingAsync()
@@ -70,6 +86,7 @@ public class LocalSyncService : ILocalSyncService, IDisposable
 
             if (pendingRecords.Count == 0 && pendingChangeLog.Count == 0)
             {
+                LastSyncedAt = DateTime.Now;
                 CurrentState = SyncState.Synced;
                 return;
             }
@@ -128,6 +145,41 @@ public class LocalSyncService : ILocalSyncService, IDisposable
                 }
             }
 
+            LastSyncedAt = DateTime.Now;
+            CurrentState = SyncState.Synced;
+        }
+        catch
+        {
+            CurrentState = SyncState.Error;
+        }
+    }
+
+    /// <summary>Pulls the current roster from Desktop and reconciles it locally - the half
+    /// of sync that RequestSync()'s debounce never covered, since nothing about opening
+    /// the app or walking within WiFi range ever called it.</summary>
+    private async Task PullRosterAsync()
+    {
+        var pairing = await _repository.GetPairingAsync();
+        if (pairing is not { IsPaired: true }) return;
+
+        try
+        {
+            using var client = new HttpClient { BaseAddress = new Uri($"http://{pairing.DesktopIp}:{pairing.DesktopPort}") };
+            client.DefaultRequestHeaders.Add("X-Pairing-Token", pairing.PairingToken);
+            client.Timeout = TimeSpan.FromSeconds(10);
+
+            var response = await client.GetAsync("/api/roster");
+            if (!response.IsSuccessStatusCode)
+            {
+                CurrentState = SyncState.Error;
+                return;
+            }
+
+            var roster = await response.Content.ReadFromJsonAsync<RosterResponse>();
+            if (roster is not null)
+                await _repository.ApplyIncomingRosterAsync(roster.Santri, roster.Kelas);
+
+            LastSyncedAt = DateTime.Now;
             CurrentState = SyncState.Synced;
         }
         catch

@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Attendly.ViewModels"
+             xmlns:controls="using:Attendly.Controls"
+             x:Class="Attendly.Views.MobileDashboardView"
+             x:DataType="vm:MobileDashboardViewModel">
+  <Grid RowDefinitions="Auto,*">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16,16,16,4">
+      <StackPanel Grid.Column="0">
+        <TextBlock Text="Dashboard" FontSize="22" FontWeight="Bold"/>
+        <TextBlock Text="{Binding TodayDisplay}" Opacity="0.6" FontSize="12"/>
+      </StackPanel>
+      <Button Grid.Column="1" Command="{Binding RefreshCommand}" Background="Transparent" Padding="6" VerticalAlignment="Center">
+        <controls:LucideIcon Kind="RefreshCw" Width="18" Height="18"/>
+      </Button>
+    </Grid>
+
+    <ScrollViewer Grid.Row="1">
+      <StackPanel Margin="16,8,16,20" Spacing="14">
+
+        <!-- Today's cross-Kelas summary -->
+        <UniformGrid Columns="3" Rows="1">
+          <Border Background="#DCFCE7" CornerRadius="16" Padding="10,14" Margin="0,0,6,0">
+            <StackPanel Spacing="2" HorizontalAlignment="Center">
+              <TextBlock Text="{Binding CountHadir}" FontSize="24" FontWeight="Bold" Foreground="#166534" HorizontalAlignment="Center"/>
+              <TextBlock Text="Hadir" FontSize="11" Foreground="#166534" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Border Background="#FEE2E2" CornerRadius="16" Padding="10,14" Margin="3,0">
+            <StackPanel Spacing="2" HorizontalAlignment="Center">
+              <TextBlock Text="{Binding CountAlpha}" FontSize="24" FontWeight="Bold" Foreground="#991B1B" HorizontalAlignment="Center"/>
+              <TextBlock Text="Alpha" FontSize="11" Foreground="#991B1B" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Border Background="#FEF3C7" CornerRadius="16" Padding="10,14" Margin="6,0,0,0">
+            <StackPanel Spacing="2" HorizontalAlignment="Center">
+              <TextBlock Text="{Binding CountIzin}" FontSize="24" FontWeight="Bold" Foreground="#92400E" HorizontalAlignment="Center"/>
+              <TextBlock Text="Izin" FontSize="11" Foreground="#92400E" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+        </UniformGrid>
+
+        <Grid ColumnDefinitions="*,*">
+          <Border Grid.Column="0" Background="#DBEAFE" CornerRadius="16" Padding="10,14" Margin="0,0,6,0">
+            <StackPanel Spacing="2" HorizontalAlignment="Center">
+              <TextBlock Text="{Binding CountSakit}" FontSize="24" FontWeight="Bold" Foreground="#1E40AF" HorizontalAlignment="Center"/>
+              <TextBlock Text="Sakit" FontSize="11" Foreground="#1E40AF" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="16" Padding="10,14" Margin="6,0,0,0">
+            <StackPanel Spacing="2" HorizontalAlignment="Center">
+              <TextBlock Text="{Binding CountBelum}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+              <TextBlock Text="Belum" FontSize="11" Opacity="0.6" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <!-- Sync status card -->
+        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="16" Padding="16">
+          <StackPanel Spacing="10">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <controls:LucideIcon Kind="{Binding SyncState, Converter={StaticResource SyncStateToIconKindConverter}}"
+                                    Stroke="{Binding SyncState, Converter={StaticResource SyncStateToBrushConverter}}"
+                                    Width="18" Height="18"/>
+              <TextBlock Text="{Binding SyncState, StringFormat='Status: {0}'}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Text="{Binding LastSyncedDisplay}" FontSize="12" Opacity="0.6"/>
+            <Button Command="{Binding SyncNowCommand}" Classes="primary" IsEnabled="{Binding !IsSyncing}"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+              <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                <controls:LucideIcon Kind="RefreshCw" Width="16" Height="16" Stroke="White"/>
+                <TextBlock Text="{Binding SyncNowLabel}" Foreground="White"/>
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Border>
+
+        <!-- Roster count -->
+        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="16" Padding="16">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0">
+              <TextBlock Text="Total santri aktif" FontSize="12" Opacity="0.6"/>
+              <TextBlock Text="{Binding TotalSantri}" FontSize="22" FontWeight="Bold" Margin="0,2,0,0"/>
+            </StackPanel>
+            <controls:LucideIcon Grid.Column="1" Kind="Users" Width="22" Height="22" Opacity="0.4" VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <TextBlock Grid.Row="1" Text="Memuat..." IsVisible="{Binding IsLoading}" Opacity="0.6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+  </Grid>
+</UserControl>

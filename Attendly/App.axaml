@@ -45,6 +45,7 @@
             <conv:ThemeModeToIconKindConverter x:Key="ThemeModeToIconKindConverter"/>
             <conv:ThemeModeToLabelConverter x:Key="ThemeModeToLabelConverter"/>
             <conv:HexToBrushConverter x:Key="HexToBrushConverter"/>
+            <conv:ActiveToDockBrushConverter x:Key="ActiveToDockBrushConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 

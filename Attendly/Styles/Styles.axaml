@@ -106,4 +106,14 @@
     <Setter Property="Height" Value="10"/>
   </Style>
 
+    <!-- Mobile bottom dock buttons: transparent, no corner radius, icon+label colored via the item's IsActive binding. -->
+<Style Selector="Button.dock-item">
+  <Setter Property="Background" Value="Transparent"/>
+  <Setter Property="Padding" Value="4,6"/>
+  <Setter Property="CornerRadius" Value="0"/>
+</Style>
+<Style Selector="Button.dock-item:pointerover">
+  <Setter Property="Background" Value="Transparent"/>
+</Style>
+
 </Styles>

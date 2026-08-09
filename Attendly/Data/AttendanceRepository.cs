@@ -7,6 +7,7 @@ using System.IO;
 
 using SQLite;
 using Attendly.Models;
+using Attendly.Sync;
 
 namespace Attendly.Data;
 
@@ -99,6 +100,43 @@ public class AttendanceRepository
 
     public Task<int> DeactivateSantriAsync(int santriId) =>
         _db.ExecuteAsync("UPDATE Santri SET IsActive = 0 WHERE Id = ?", santriId);
+
+    /// <summary>
+    /// Mobile-side reconciliation of the roster pulled from Desktop's GET /api/roster.
+    /// Uses InsertOrReplace keyed on Desktop's own Id (not UpsertSantriAsync's
+    /// insert-if-zero/update-otherwise logic, which assumes a locally-generated id and
+    /// would silently no-op on a santri this device has never seen before). Preserving
+    /// Desktop's Id here is what keeps AttendanceRecordDto.SantriId lined up correctly
+    /// across devices on every future sync.
+    /// </summary>
+    public async Task ApplyIncomingRosterAsync(IEnumerable<SantriDto> santri, IEnumerable<KelasConfigDto> kelas)
+    {
+        foreach (var dto in santri)
+        {
+            await _db.InsertOrReplaceAsync(new Santri
+            {
+                Id = dto.Id,
+                Nik = dto.Nik,
+                Nama = dto.Nama,
+                NamaPanggilan = dto.NamaPanggilan,
+                JenisKelamin = JenisKelaminExtensions.FromCode(dto.JenisKelaminCode),
+                TempatLahir = dto.TempatLahir,
+                Alamat = dto.Alamat,
+                MasukTpqTahun = dto.MasukTpqTahun,
+                TartilLevel = dto.TartilLevel,
+                IsActive = dto.IsActive,
+            });
+        }
+
+        foreach (var dto in kelas)
+        {
+            await _db.InsertOrReplaceAsync(new KelasConfig
+            {
+                TartilLevel = dto.TartilLevel,
+                SessionDaysMask = dto.SessionDaysMask,
+            });
+        }
+    }
 
     // ---------------- KelasConfig ----------------
 
@@ -337,6 +375,13 @@ public class AttendanceRepository
             .Where(r => r.TartilLevel == level && r.Date >= start && r.Date < end)
             .ToListAsync();
     }
+
+    /// <summary>All attendance across every Kelas for one day - backs the mobile Dashboard's
+    /// cross-class summary cards. Unlike GetOrInitializeDayAsync, this never auto-inserts
+    /// Libur records; it's a pure read of whatever already exists.</summary>
+    public Task<List<AttendanceRecord>> GetAttendanceForDateAsync(DateTime date) =>
+        _db.Table<AttendanceRecord>().Where(r => r.Date == date.Date).ToListAsync();
+
     /// <summary>Single-record lookup used by the Desktop API to report what it actually holds after a conflict.</summary>
     public Task<AttendanceRecord?> GetRecordAsync(int santriId, DateTime date) =>
          _db.Table<AttendanceRecord>().Where(r => r.SantriId == santriId && r.Date == date.Date).FirstOrDefaultAsync();

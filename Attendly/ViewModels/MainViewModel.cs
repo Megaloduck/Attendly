@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Attendly.Controls;
 using Attendly.Data;
 using Attendly.Models;
 using Attendly.Services;
@@ -9,9 +12,14 @@ namespace Attendly.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly AttendanceRepository _repository;
-    private readonly ILocalSyncService _syncService;
     private readonly IThemeService _themeService;
+
+    private readonly KelasPickerViewModel _homeTab;
+    private readonly MobileDashboardViewModel _dashboardTab;
+    private readonly ActivityLogViewModel _riwayatTab;
+    private readonly MobilePairingViewModel _syncTab;
+
+    public ObservableCollection<BottomNavItemViewModel> NavItems { get; } = new();
 
     [ObservableProperty]
     private ViewModelBase _currentPage = null!;
@@ -22,43 +30,75 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private ThemeMode _themeMode;
 
+    /// <summary>Hidden while marking attendance for a Kelas - that screen owns the full
+    /// height, same as the inspiration's single-purpose list view.</summary>
+    [ObservableProperty]
+    private bool _isDockVisible = true;
+
     public MainViewModel(AttendanceRepository repository, ILocalSyncService syncService, IThemeService themeService)
     {
-        _repository = repository;
-        _syncService = syncService;
         _themeService = themeService;
 
-        _syncState = _syncService.CurrentState;
+        _syncState = syncService.CurrentState;
         _themeMode = _themeService.CurrentMode;
 
-        _syncService.StateChanged += state => SyncState = state;
+        syncService.StateChanged += state => SyncState = state;
         _themeService.ModeChanged += mode => ThemeMode = mode;
 
-        CurrentPage = new KelasPickerViewModel(_repository, OpenKelasAsync);
+        _homeTab = new KelasPickerViewModel(repository, level => OpenKelasAsync(level, repository, syncService));
+        _dashboardTab = new MobileDashboardViewModel(repository, syncService);
+        _riwayatTab = new ActivityLogViewModel(repository, GoHome);
+        _syncTab = new MobilePairingViewModel(repository, GoHome);
+
+        var tabs = new (string Key, string Label, LucideIconKind Icon, ViewModelBase Page)[]
+        {
+            ("home", "Home", LucideIconKind.Home, _homeTab),
+            ("dashboard", "Dashboard", LucideIconKind.LayoutDashboard, _dashboardTab),
+            ("riwayat", "Riwayat", LucideIconKind.Clock, _riwayatTab),
+            ("sync", "Sync", LucideIconKind.RefreshCw, _syncTab),
+        };
+
+        foreach (var (key, label, icon, page) in tabs)
+        {
+            var capturedKey = key;
+            var capturedPage = page;
+            var item = new BottomNavItemViewModel(label, icon, async () =>
+            {
+                if (capturedPage == _dashboardTab)
+                    await _dashboardTab.LoadAsync();
+
+                Navigate(capturedPage, capturedKey);
+                IsDockVisible = true;
+            })
+            { Key = key };
+            NavItems.Add(item);
+        }
+
+        Navigate(_homeTab, "home");
     }
 
-    private async Task OpenKelasAsync(TartilLevel level)
+    private void Navigate(ViewModelBase page, string key)
     {
-        var attendanceViewModel = new AttendanceViewModel(level, _repository, _syncService, GoBackToKelasPicker);
+        CurrentPage = page;
+        foreach (var nav in NavItems)
+            nav.IsActive = nav.Key == key;
+    }
+
+    private void GoHome()
+    {
+        Navigate(_homeTab, "home");
+        IsDockVisible = true;
+    }
+
+    private async Task OpenKelasAsync(TartilLevel level, AttendanceRepository repository, ILocalSyncService syncService)
+    {
+        var attendanceViewModel = new AttendanceViewModel(level, repository, syncService, GoHome);
         await attendanceViewModel.InitializeAsync();
+
         CurrentPage = attendanceViewModel;
-    }
-
-    private void GoBackToKelasPicker()
-    {
-        CurrentPage = new KelasPickerViewModel(_repository, OpenKelasAsync);
-    }
-
-    [RelayCommand]
-    private void OpenPairing()
-    {
-        CurrentPage = new MobilePairingViewModel(_repository, GoBackToKelasPicker);
-    }
-
-    [RelayCommand]
-    private void OpenActivityLog()
-    {
-        CurrentPage = new ActivityLogViewModel(_repository, GoBackToKelasPicker);
+        IsDockVisible = false;
+        foreach (var nav in NavItems)
+            nav.IsActive = false;
     }
 
     [RelayCommand]

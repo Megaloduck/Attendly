@@ -45,6 +45,7 @@ public enum LucideIconKind
     Calendar,
     CheckCheck,
     Clock,
+    Home,
 }
 
 public class LucideIcon : Path
@@ -108,5 +109,6 @@ internal static class LucideIconData
         [LucideIconKind.Calendar] = "M8 2v3 M16 2v3 M5,3 H19 A2,2 0 0 1 21,5 V19 A2,2 0 0 1 19,21 H5 A2,2 0 0 1 3,19 V5 A2,2 0 0 1 5,3 Z M3 9h18",
         [LucideIconKind.CheckCheck] = "M18 6 7 17l-5-5 M22 10 14.5 17.5L13 16",
         [LucideIconKind.Clock] = "M2.0,12.0 a10.0,10.0 0 1,0 20.0,0 a10.0,10.0 0 1,0 -20.0,0 M12 6v6l4 2",
+        [LucideIconKind.Home] = "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8 M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
     };
 }

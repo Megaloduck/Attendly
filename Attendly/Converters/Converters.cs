@@ -114,3 +114,16 @@ public class HexToBrushConverter : IValueConverter
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>Colors a bottom-dock icon/label - blue while active, muted gray otherwise.</summary>
+public class ActiveToDockBrushConverter : IValueConverter
+{
+    private static readonly IBrush Active = new SolidColorBrush(Color.Parse("#2563EB"));
+    private static readonly IBrush Inactive = new SolidColorBrush(Color.Parse("#9CA3AF"));
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is true ? Active : Inactive;
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
