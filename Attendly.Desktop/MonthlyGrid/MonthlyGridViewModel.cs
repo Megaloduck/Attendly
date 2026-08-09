@@ -12,10 +12,14 @@ namespace Attendly.Desktop.MonthlyGrid;
 
 public sealed record LegendItemViewModel(string DisplayText, string ColorHex);
 
+/// <summary>One day cell in the flat attendance table - a colored status dot (or none,
+/// if not yet marked). No letter code is drawn on the grid itself; the dot's color plus
+/// its tooltip carry the same information the letter used to.</summary>
 public sealed class MonthlyGridCell
 {
-    public string Code { get; init; } = string.Empty;
-    public string? ColorHex { get; init; }
+    public AttendanceStatus? Status { get; init; }
+    public string? DotColorHex { get; init; }
+    public string? TooltipText { get; init; }
 }
 
 public sealed class MonthlyGridRow
@@ -24,9 +28,6 @@ public sealed class MonthlyGridRow
     public IReadOnlyList<MonthlyGridCell> Cells { get; init; } = Array.Empty<MonthlyGridCell>();
 }
 
-/// <summary>Plain snapshot of one Tartil/month, rebuilt wholesale on every load rather
-/// than kept as observable rows - the code-behind Grid in MonthlyGridView rebuilds
-/// from this each time it changes, so there's no benefit to per-cell binding here.</summary>
 public sealed class MonthlyGridTableData
 {
     public int DaysInMonth { get; init; }
@@ -37,16 +38,16 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
 {
     private readonly AttendanceRepository _repository;
 
-    // Lighter tints of the same hues StatusChipBrushConverter/AttendanceExportService
-    // already use for H/A/I/S/O - kept as plain strings (not brushes) since this data
-    // feeds a Grid built in code-behind, outside any binding/converter context.
-    private static readonly Dictionary<AttendanceStatus, string> StatusColors = new()
+    /// <summary>Saturated dot colors. Present/Absent/Leave map to green/red/orange per the
+    /// flat data-table brief; Sakit and Libur get their own colors too since the real domain
+    /// has five states, not three - Sakit is folded into the "Leave" KPI card below.</summary>
+    private static readonly Dictionary<AttendanceStatus, string> DotColors = new()
     {
-        [AttendanceStatus.Hadir] = "#DCFCE7",
-        [AttendanceStatus.Alpha] = "#FEE2E2",
-        [AttendanceStatus.Izin] = "#FEF3C7",
-        [AttendanceStatus.Sakit] = "#DBEAFE",
-        [AttendanceStatus.Libur] = "#E5E7EB",
+        [AttendanceStatus.Hadir] = "#16A34A",  // Present
+        [AttendanceStatus.Alpha] = "#DC2626",  // Absent
+        [AttendanceStatus.Izin] = "#D97706",   // Leave (permission)
+        [AttendanceStatus.Sakit] = "#2563EB",  // Sick - grouped into "Leave" for the KPI cards
+        [AttendanceStatus.Libur] = "#9CA3AF",  // Non-session day
     };
 
     public IReadOnlyList<TartilOption> AvailableTartil { get; } =
@@ -66,6 +67,13 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
 
     [ObservableProperty]
     private MonthlyGridTableData? _gridData;
+
+    // The three KPI cards: Present / Absent / Leave, out of all counted (session-day)
+    // marks. Libur is excluded from the base - same convention the export already uses.
+    [ObservableProperty] private int _presentCount;
+    [ObservableProperty] private int _absentCount;
+    [ObservableProperty] private int _leaveCount;
+    [ObservableProperty] private double _presentPercent;
 
     public ObservableCollection<LegendItemViewModel> LegendItems { get; } = new();
 
@@ -106,11 +114,16 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
                 if (byDay.TryGetValue(day, out var record))
                 {
                     counts[record.Status]++;
-                    cells.Add(new MonthlyGridCell { Code = record.Status.ToCode().ToString(), ColorHex = StatusColors[record.Status] });
+                    cells.Add(new MonthlyGridCell
+                    {
+                        Status = record.Status,
+                        DotColorHex = DotColors[record.Status],
+                        TooltipText = $"Tgl {day}: {record.Status.ToDisplayLabel()}",
+                    });
                 }
                 else
                 {
-                    cells.Add(new MonthlyGridCell()); // not yet marked - blank cell
+                    cells.Add(new MonthlyGridCell { TooltipText = $"Tgl {day}: Belum diabsen" });
                 }
             }
 
@@ -119,22 +132,20 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
 
         GridData = new MonthlyGridTableData { DaysInMonth = daysInMonth, Rows = rows };
 
-        // Libur is excluded from the percentage base, same convention the export
-        // already uses (HADIR/S/I/A) - it's a non-session day, not an attendance outcome.
         var countedTotal = counts.Where(kv => kv.Key != AttendanceStatus.Libur).Sum(kv => kv.Value);
+
+        PresentCount = counts[AttendanceStatus.Hadir];
+        AbsentCount = counts[AttendanceStatus.Alpha];
+        LeaveCount = counts[AttendanceStatus.Izin] + counts[AttendanceStatus.Sakit];
+        PresentPercent = countedTotal == 0 ? 0 : PresentCount / (double)countedTotal * 100;
+
         LegendItems.Clear();
-        LegendItems.Add(BuildLegendItem("Hadir", counts[AttendanceStatus.Hadir], countedTotal, StatusColors[AttendanceStatus.Hadir]));
-        LegendItems.Add(BuildLegendItem("Sakit", counts[AttendanceStatus.Sakit], countedTotal, StatusColors[AttendanceStatus.Sakit]));
-        LegendItems.Add(BuildLegendItem("Izin", counts[AttendanceStatus.Izin], countedTotal, StatusColors[AttendanceStatus.Izin]));
-        LegendItems.Add(BuildLegendItem("Alpha", counts[AttendanceStatus.Alpha], countedTotal, StatusColors[AttendanceStatus.Alpha]));
-        LegendItems.Add(new LegendItemViewModel($"Libur {counts[AttendanceStatus.Libur]}", StatusColors[AttendanceStatus.Libur]));
+        LegendItems.Add(new LegendItemViewModel("Hadir (Present)", DotColors[AttendanceStatus.Hadir]));
+        LegendItems.Add(new LegendItemViewModel("Alpha (Absent)", DotColors[AttendanceStatus.Alpha]));
+        LegendItems.Add(new LegendItemViewModel("Izin (Leave)", DotColors[AttendanceStatus.Izin]));
+        LegendItems.Add(new LegendItemViewModel("Sakit (Sick)", DotColors[AttendanceStatus.Sakit]));
+        LegendItems.Add(new LegendItemViewModel("Libur (Non-session)", DotColors[AttendanceStatus.Libur]));
 
         IsLoading = false;
     }
-
-    private static LegendItemViewModel BuildLegendItem(string label, int count, int total, string colorHex)
-    {
-        var percent = total == 0 ? 0 : count / (double)total * 100;
-        return new LegendItemViewModel($"{label} {percent:0}%", colorHex);
-    }
-}
+}   

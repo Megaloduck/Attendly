@@ -37,15 +37,20 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:DashboardStatCard">
               <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,12,12">
-                <StackPanel Spacing="10">
-                  <Border Width="40" Height="40" CornerRadius="10"
-                          Background="{Binding BadgeBackgroundHex, Converter={StaticResource HexToBrushConverter}}">
-                    <controls:LucideIcon Kind="{Binding Icon}" Width="20" Height="20"
-                                          Stroke="{Binding AccentHex, Converter={StaticResource HexToBrushConverter}}"
-                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                  </Border>
-                  <TextBlock Text="{Binding Value}" FontSize="24" FontWeight="Bold"
+                <StackPanel Spacing="10" >
+                    <StackPanel  Orientation="Horizontal">
+                        <TextBlock Text="{Binding Value}" FontSize="24" FontWeight="Bold"
                              Foreground="{Binding AccentHex, Converter={StaticResource HexToBrushConverter}}"/>
+
+                        <Border Width="40" Height="40" CornerRadius="10" HorizontalAlignment="Right" 
+                                Background="{Binding BadgeBackgroundHex, Converter={StaticResource HexToBrushConverter}}">
+                            <controls:LucideIcon Kind="{Binding Icon}" Width="20" Height="20"
+                                                 Stroke="{Binding AccentHex, Converter={StaticResource HexToBrushConverter}}"
+                                                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        
+                    </StackPanel>
+                
                   <TextBlock Text="{Binding Label}" Opacity="0.7" FontSize="13"/>
                 </StackPanel>
               </Border>

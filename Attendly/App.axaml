@@ -14,11 +14,30 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="CardBackgroundBrush" Color="#F3F4F6"/>
+
+                    <!-- Flat enterprise dashboard palette (Desktop admin only) - new keys,
+                         deliberately separate from CardBackgroundBrush above so this restyle
+                         never touches how the mobile teacher app looks. -->
+                    <SolidColorBrush x:Key="PageBackgroundBrush" Color="#EEF1F5"/>
+                    <SolidColorBrush x:Key="FlatCardBackgroundBrush" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="BorderSubtleBrush" Color="#E2E5EA"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="CardBackgroundBrush" Color="#27272A"/>
+
+                    <SolidColorBrush x:Key="PageBackgroundBrush" Color="#16181D"/>
+                    <SolidColorBrush x:Key="FlatCardBackgroundBrush" Color="#212327"/>
+                    <SolidColorBrush x:Key="BorderSubtleBrush" Color="#33363D"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
+
+            <!-- Fixed (non-theming) sidebar palette. Enterprise admin sidebars conventionally
+                 stay one constant color regardless of the content area's light/dark mode. -->
+            <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#1E293B"/>
+            <SolidColorBrush x:Key="SidebarHoverBrush" Color="#334155"/>
+            <SolidColorBrush x:Key="SidebarActiveBrush" Color="#2563EB"/>
+            <SolidColorBrush x:Key="SidebarTextBrush" Color="#F1F5F9"/>
+            <SolidColorBrush x:Key="SidebarMutedTextBrush" Color="#94A3B8"/>
 
             <conv:StatusChipBrushConverter x:Key="StatusChipBrushConverter"/>
             <conv:SyncStateToBrushConverter x:Key="SyncStateToBrushConverter"/>

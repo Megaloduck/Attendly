@@ -39,17 +39,71 @@
     <Setter Property="CornerRadius" Value="8"/>
   </Style>
 
-          <!-- Desktop sidebar nav buttons: full-width, flat, highlighted when active. -->
- <Style Selector="Button.nav-item">
+  <!-- Desktop sidebar nav buttons: full-width, flat, highlighted when active.
+       Colors come from the fixed sidebar palette in App.axaml, not the theme
+       dictionaries - the sidebar stays one color regardless of light/dark mode. -->
+  <Style Selector="Button.nav-item">
     <Setter Property="Background" Value="Transparent"/>
-   <Setter Property="Padding" Value="20,10"/>
-    <Setter Property="CornerRadius" Value="0"/>
+    <Setter Property="Padding" Value="20,10"/>
+    <Setter Property="CornerRadius" Value="6"/>
+    <Setter Property="Margin" Value="8,2"/>
   </Style>
   <Style Selector="Button.nav-item:pointerover">
-    <Setter Property="Background" Value="#1F2937"/>
+    <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}"/>
   </Style>
   <Style Selector="Button.nav-item.active">
-    <Setter Property="Background" Value="#2563EB"/>
-</Style>
+    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}"/>
+  </Style>
+
+  <!-- ==================== Flat enterprise data-table tokens ====================
+       New for the Desktop admin restyle: flat 2D containers with hairline borders
+       instead of shadows/elevation, built for data density over visual flair.
+       Scoped to FlatCardBackgroundBrush/PageBackgroundBrush (not the shared
+       CardBackgroundBrush), so this never touches the mobile teacher app. -->
+
+  <Style Selector="Border.flat-card">
+    <Setter Property="Background" Value="{DynamicResource FlatCardBackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="10"/>
+  </Style>
+
+  <!-- KPI summary card: one big number + a label, used in threes at the bottom of a page. -->
+  <Style Selector="Border.kpi-card">
+    <Setter Property="Background" Value="{DynamicResource FlatCardBackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="10"/>
+    <Setter Property="Padding" Value="18"/>
+  </Style>
+  <Style Selector="TextBlock.kpi-value">
+    <Setter Property="FontSize" Value="32"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+  </Style>
+  <Style Selector="TextBlock.kpi-label">
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Opacity" Value="0.55"/>
+    <Setter Property="LetterSpacing" Value="1"/>
+  </Style>
+
+  <!-- Filter bar: the strip of dropdowns above a data table. -->
+  <Style Selector="Border.filter-bar">
+    <Setter Property="Background" Value="{DynamicResource FlatCardBackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="Padding" Value="14,12"/>
+  </Style>
+  <Style Selector="ComboBox.filter">
+    <Setter Property="CornerRadius" Value="6"/>
+    <Setter Property="MinHeight" Value="36"/>
+  </Style>
+
+  <!-- Status dot - Present/Absent/Leave/Sick/Libur, colored per-cell in code-behind. -->
+  <Style Selector="Ellipse.status-dot">
+    <Setter Property="Width" Value="10"/>
+    <Setter Property="Height" Value="10"/>
+  </Style>
 
 </Styles>
