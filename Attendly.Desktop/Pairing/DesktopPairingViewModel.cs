@@ -21,14 +21,39 @@ public partial class DesktopPairingViewModel : ViewModelBase
     private Bitmap? _qrImage;
 
     [ObservableProperty]
+    private string? _qrError;
+
+    [ObservableProperty]
     private string? _pairingCodeText;
+
+    public ObservableCollection<string> AvailableIps { get; } = new();
+
+    [ObservableProperty]
+    private string _selectedIp = string.Empty;
 
     public ObservableCollection<PairedDeviceRowViewModel> PairedDevices { get; } = new();
 
     public DesktopPairingViewModel(AttendanceRepository repository)
     {
         _repository = repository;
+        RefreshIps();
         _ = LoadPairedDevicesAsync();
+    }
+
+    [RelayCommand]
+    private void RefreshIps()
+    {
+        var candidates = LocalNetwork.GetCandidateLanIps();
+
+        AvailableIps.Clear();
+        foreach (var ip in candidates)
+            AvailableIps.Add(ip);
+
+        if (AvailableIps.Count == 0)
+            AvailableIps.Add("192.168.1.X");
+
+        if (string.IsNullOrWhiteSpace(SelectedIp) || !AvailableIps.Contains(SelectedIp))
+            SelectedIp = AvailableIps[0];
     }
 
     private async Task LoadPairedDevicesAsync()
@@ -42,21 +67,35 @@ public partial class DesktopPairingViewModel : ViewModelBase
     [RelayCommand]
     private async Task GenerateCode()
     {
-        var ip = LocalNetwork.GetLikelyLanIp() ?? "192.168.1.X";
+        var ip = string.IsNullOrWhiteSpace(SelectedIp) ? "192.168.1.X" : SelectedIp.Trim();
         var token = Guid.NewGuid().ToString("N");
 
         await _repository.AddPairedDeviceAsync(token, "Perangkat baru");
 
         var code = PairingCode.Encode(ip, AttendlyApiHost.Port, token);
+
+        // Set the text code FIRST and unconditionally - this is the guaranteed fallback,
+        // so it must not depend on the QR bitmap below succeeding.
         PairingCodeText = code;
+        QrImage = null;
+        QrError = null;
 
-        using var qrGenerator = new QRCodeGenerator();
-        using var qrData = qrGenerator.CreateQrCode(code, QRCodeGenerator.ECCLevel.Q);
-        using var pngQr = new PngByteQRCode(qrData);
-        var bytes = pngQr.GetGraphic(10);
+        try
+        {
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(code, QRCodeGenerator.ECCLevel.Q);
+            using var pngQr = new PngByteQRCode(qrData);
+            var bytes = pngQr.GetGraphic(10);
 
-        using var stream = new System.IO.MemoryStream(bytes);
-        QrImage = new Bitmap(stream);
+            using var stream = new System.IO.MemoryStream(bytes);
+            QrImage = new Bitmap(stream);
+        }
+        catch (Exception)
+        {
+            // QR rendering is a nice-to-have on top of the code text above, not a
+            // prerequisite for pairing - a failure here should never hide the fallback.
+            QrError = "QR tidak bisa ditampilkan di perangkat ini. Gunakan kode di bawah untuk dimasukkan manual di HP.";
+        }
 
         await LoadPairedDevicesAsync();
     }

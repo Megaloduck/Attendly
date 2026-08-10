@@ -2,21 +2,61 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Attendly.Desktop.Pairing"
              xmlns:conv="using:Avalonia.Data.Converters"
+             xmlns:controls="using:Attendly.Controls"
              x:Class="Attendly.Desktop.Pairing.DesktopPairingView"
              x:DataType="vm:DesktopPairingViewModel">
   <Grid RowDefinitions="Auto,*" Margin="24">
     <StackPanel Grid.Row="0" Spacing="12">
       <TextBlock Text="Hubungkan Perangkat Guru" FontSize="22" FontWeight="Bold"/>
       <TextBlock Text="Buat kode baru, lalu scan dengan aplikasi di HP guru (atau salin kode untuk dimasukkan manual)." Opacity="0.7" TextWrapping="Wrap"/>
+
+      <StackPanel Spacing="6">
+        <TextBlock Text="IP komputer ini (di jaringan WiFi sekolah)" FontWeight="SemiBold" FontSize="13"/>
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBox Grid.Column="0" Text="{Binding SelectedIp}" Watermark="192.168.1.X"/>
+          <Button Grid.Column="1" Command="{Binding RefreshIpsCommand}" Margin="6,0,0,0" Padding="8">
+            <controls:LucideIcon Kind="RefreshCw" Width="16" Height="16"/>
+          </Button>
+        </Grid>
+
+        <!-- Detected candidates as tappable chips - ComboBox isn't editable in Avalonia,
+             so a plain free-typing TextBox above plus these fill-in buttons covers both
+             "pick a detected one" and "type it myself" without fighting the control. -->
+        <ItemsControl ItemsSource="{Binding AvailableIps}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <Button Content="{Binding}" Tag="{Binding}" Click="OnIpCandidateClick"
+                      FontSize="11" Padding="10,4" Margin="0,4,6,0" CornerRadius="20"
+                      Background="{DynamicResource CardBackgroundBrush}"/>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock Text="Jika alamat di atas bukan IP WiFi sekolah (misalnya IP dari VPN/VirtualBox), ketik manual atau pilih salah satu di atas." Opacity="0.55" FontSize="11" TextWrapping="Wrap"/>
+      </StackPanel>
+
       <Button Content="Buat Kode Baru" Command="{Binding GenerateCodeCommand}" HorizontalAlignment="Left"/>
 
-      <Border IsVisible="{Binding QrImage, Converter={x:Static conv:ObjectConverters.IsNotNull}}"
-              Background="White" Padding="12" HorizontalAlignment="Left" CornerRadius="8">
-        <StackPanel Spacing="8" HorizontalAlignment="Center">
+      <StackPanel Spacing="10" IsVisible="{Binding PairingCodeText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
+
+        <Border Background="White" Padding="12" HorizontalAlignment="Left" CornerRadius="8"
+                IsVisible="{Binding QrImage, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
           <Image Source="{Binding QrImage}" Width="200" Height="200"/>
-          <SelectableTextBlock Text="{Binding PairingCodeText}" HorizontalAlignment="Center" FontFamily="Consolas,monospace" FontSize="12"/>
-        </StackPanel>
-      </Border>
+        </Border>
+
+        <TextBlock Text="{Binding QrError}" Foreground="#D97706" FontSize="12" TextWrapping="Wrap"
+                   IsVisible="{Binding QrError, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+
+        <TextBlock Text="Atau masukkan kode ini secara manual di HP guru:" FontSize="13" Opacity="0.7"/>
+        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="12,10">
+          <SelectableTextBlock Text="{Binding PairingCodeText}" FontFamily="Consolas,monospace" FontSize="14" TextWrapping="Wrap"/>
+        </Border>
+      </StackPanel>
 
       <TextBlock Text="Perangkat Terhubung" FontSize="16" FontWeight="SemiBold" Margin="0,16,0,0"/>
     </StackPanel>
@@ -39,4 +79,4 @@
       </ItemsControl>
     </ScrollViewer>
   </Grid>
-</UserControl>
+</UserControl>  
