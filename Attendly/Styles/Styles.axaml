@@ -49,10 +49,10 @@
     <Setter Property="Margin" Value="8,2"/>
   </Style>
   <Style Selector="Button.nav-item:pointerover">
-    <Setter Property="Background" Value="{StaticResource SidebarHoverBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource SidebarHoverBrush}"/>
   </Style>
   <Style Selector="Button.nav-item.active">
-    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource SidebarActiveBrush}"/>
   </Style>
 
   <!-- ==================== Flat enterprise data-table tokens ====================
