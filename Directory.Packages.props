@@ -23,6 +23,6 @@
     <PackageVersion Include="QRCoder" Version="1.8.0" />
     <PackageVersion Include="ClosedXML" Version="0.105.1" />
     <PackageVersion Include="Xamarin.Google.MLKit.BarcodeScanning" Version="117.3.0.8" />
-    <PackageVersion Include="Xamarin.GooglePlayServices.MLKit.BarcodeScanning" Version="118.3.1.8" />
+    <PackageVersion Include="Xamarin.GooglePlayServices.Code.Scanner" Version="116.1.0.16" />    
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0-android</TargetFramework>
-    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
     <ApplicationId>com.CompanyName.Attendly</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
     <PackageReference Include="Xamarin.Google.MLKit.BarcodeScanning" />
-	<PackageReference Include="Xamarin.GooglePlayServices.MLKit.BarcodeScanning" />
+    <PackageReference Include="Xamarin.GooglePlayServices.Code.Scanner" />	
   </ItemGroup>
 
   <ItemGroup>
