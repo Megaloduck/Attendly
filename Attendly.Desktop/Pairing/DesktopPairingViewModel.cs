@@ -68,14 +68,12 @@ public partial class DesktopPairingViewModel : ViewModelBase
     private async Task GenerateCode()
     {
         var ip = string.IsNullOrWhiteSpace(SelectedIp) ? "192.168.1.X" : SelectedIp.Trim();
-        var token = Guid.NewGuid().ToString("N");
+        var token = PairingTokenGenerator.Generate();
 
         await _repository.AddPairedDeviceAsync(token, "Perangkat baru");
 
         var code = PairingCode.Encode(ip, AttendlyApiHost.Port, token);
 
-        // Set the text code FIRST and unconditionally - this is the guaranteed fallback,
-        // so it must not depend on the QR bitmap below succeeding.
         PairingCodeText = code;
         QrImage = null;
         QrError = null;
@@ -92,8 +90,6 @@ public partial class DesktopPairingViewModel : ViewModelBase
         }
         catch (Exception)
         {
-            // QR rendering is a nice-to-have on top of the code text above, not a
-            // prerequisite for pairing - a failure here should never hide the fallback.
             QrError = "QR tidak bisa ditampilkan di perangkat ini. Gunakan kode di bawah untuk dimasukkan manual di HP.";
         }
 

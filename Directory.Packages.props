@@ -21,6 +21,8 @@
     <PackageVersion Include="sqlite-net-pcl" Version="1.11.285" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.1" />
     <PackageVersion Include="QRCoder" Version="1.8.0" />
-	<PackageVersion Include="ClosedXML" Version="0.105.1" />
+    <PackageVersion Include="ClosedXML" Version="0.105.1" />
+    <PackageVersion Include="Xamarin.Google.MLKit.BarcodeScanning" Version="117.3.0.8" />
+    <PackageVersion Include="Xamarin.GooglePlayServices.MLKit.BarcodeScanning" Version="118.3.1.8" />
   </ItemGroup>
 </Project>

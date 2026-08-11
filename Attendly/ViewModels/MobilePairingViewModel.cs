@@ -4,18 +4,15 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Attendly.Data;
+using Attendly.Services;
 using Attendly.Sync;
 
 namespace Attendly.ViewModels;
 
-/// <summary>
-/// Mobile side of pairing: manual entry of the ip:port:token code shown on
-/// Desktop, plus the teacher's name (the "who" for the activity log - stamped
-/// onto every attendance change this device makes from now on).
-/// </summary>
 public partial class MobilePairingViewModel : ViewModelBase
 {
     private readonly AttendanceRepository _repository;
+    private readonly IQrScanner _qrScanner;
     private readonly Action _goBack;
 
     [ObservableProperty]
@@ -33,9 +30,15 @@ public partial class MobilePairingViewModel : ViewModelBase
     [ObservableProperty]
     private string? _pairedDesktopLabel;
 
-    public MobilePairingViewModel(AttendanceRepository repository, Action goBack)
+    /// <summary>False on any device without a real scanner behind it (Desktop, or a mobile
+    /// build where the platform head never registered one) - the button only shows where
+    /// it'll actually do something.</summary>
+    public bool CanScanQr => _qrScanner.IsSupported;
+
+    public MobilePairingViewModel(AttendanceRepository repository, IQrScanner qrScanner, Action goBack)
     {
         _repository = repository;
+        _qrScanner = qrScanner;
         _goBack = goBack;
         _ = LoadCurrentPairingAsync();
     }
@@ -48,6 +51,16 @@ public partial class MobilePairingViewModel : ViewModelBase
             PairedDesktopLabel = $"{pairing.DesktopIp}:{pairing.DesktopPort}";
         if (!string.IsNullOrWhiteSpace(pairing?.TeacherName))
             TeacherName = pairing!.TeacherName!;
+    }
+
+    [RelayCommand]
+    private async Task ScanQr()
+    {
+        var scanned = await _qrScanner.ScanAsync();
+        if (string.IsNullOrWhiteSpace(scanned)) return; // canceled, failed, or unsupported - manual entry still works
+
+        PairingCodeInput = scanned;
+        await Connect();
     }
 
     [RelayCommand]
@@ -94,4 +107,4 @@ public partial class MobilePairingViewModel : ViewModelBase
 
     [RelayCommand]
     private void Done() => _goBack();
-}       
+}   

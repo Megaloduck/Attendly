@@ -16,7 +16,8 @@ namespace Attendly.Services;
 ///
 /// If a platform head needs its own IAppPathProvider (Android/iOS in Phase 5),
 /// register it BEFORE calling AddAttendlyCore() - TryAddSingleton below only
-/// fills in the default if nothing is registered yet.
+/// fills in the default if nothing is registered yet. Attendly.Android's
+/// IQrScanner registration follows the same pattern via App.QrScannerFactory.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -26,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IClock, SystemClock>();
         services.TryAddSingleton<ILocalSyncService, LocalSyncService>();
         services.TryAddSingleton<IThemeService, ThemeService>();
+        services.TryAddSingleton<IQrScanner, NullQrScanner>();
 
         // One shared SQLite connection for the app's lifetime.
         services.AddSingleton<AttendanceRepository>();

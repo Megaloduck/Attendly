@@ -30,12 +30,10 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private ThemeMode _themeMode;
 
-    /// <summary>Hidden while marking attendance for a Kelas - that screen owns the full
-    /// height, same as the inspiration's single-purpose list view.</summary>
     [ObservableProperty]
     private bool _isDockVisible = true;
 
-    public MainViewModel(AttendanceRepository repository, ILocalSyncService syncService, IThemeService themeService)
+    public MainViewModel(AttendanceRepository repository, ILocalSyncService syncService, IThemeService themeService, IQrScanner qrScanner)
     {
         _themeService = themeService;
 
@@ -48,7 +46,7 @@ public partial class MainViewModel : ViewModelBase
         _homeTab = new KelasPickerViewModel(repository, level => OpenKelasAsync(level, repository, syncService));
         _dashboardTab = new MobileDashboardViewModel(repository, syncService);
         _riwayatTab = new ActivityLogViewModel(repository, GoHome);
-        _syncTab = new MobilePairingViewModel(repository, GoHome);
+        _syncTab = new MobilePairingViewModel(repository, qrScanner, GoHome);
 
         var tabs = new (string Key, string Label, LucideIconKind Icon, ViewModelBase Page)[]
         {

@@ -20,15 +20,15 @@ public partial class App : Application
 {
     public static AttendanceRepository? Repository { get; private set; }
 
-    /// <summary>Fires once core services are ready. Desktop uses this to start its LAN API host.</summary>
     public static event Action<AttendanceRepository>? CoreServicesReady;
 
-    /// <summary>
-    /// Lets a platform head override the root Window/View content. Unset
-    /// (Android/iOS) falls back to the default teacher flow (MainView).
-    /// Attendly.Desktop sets this to its own admin shell.
-    /// </summary>
     public static Func<AttendanceRepository, IThemeService, Control>? RootContentFactory { get; set; }
+
+    /// <summary>Lets a platform head supply a real IQrScanner before core services are built.
+    /// Set by Attendly.Android's MainActivity in OnCreate(), before base.OnCreate() reaches
+    /// OnFrameworkInitializationCompleted() below. Unset platforms (Desktop, iOS until it gets
+    /// one) fall back to NullQrScanner via AddAttendlyCore()'s TryAddSingleton.</summary>
+    public static Func<IQrScanner>? QrScannerFactory { get; set; }
 
     public override void Initialize()
     {
@@ -37,12 +37,18 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        var services = new ServiceCollection()
+        var serviceCollection = new ServiceCollection();
+
+        if (QrScannerFactory is { } qrScannerFactory)
+            serviceCollection.AddSingleton(qrScannerFactory());
+
+        var services = serviceCollection
             .AddAttendlyCore()
             .BuildServiceProvider();
 
         var repository = services.GetRequiredService<AttendanceRepository>();
         var themeService = services.GetRequiredService<IThemeService>();
+        var qrScanner = services.GetRequiredService<IQrScanner>();
 
         // Run on a thread-pool thread so the internal awaits don't try to resume on this
         // (blocked) UI thread's SynchronizationContext - doing that directly deadlocks on startup.
@@ -52,10 +58,8 @@ public partial class App : Application
             await themeService.InitializeAsync();
         }).GetAwaiter().GetResult();
 
-        // Applied explicitly here (we're back on the UI thread now that GetResult() returned) rather
-        // than relying on ModeChanged, since that event fired from the background thread above.
         ApplyTheme(themeService.CurrentMode);
-        themeService.ModeChanged += ApplyTheme; // later toggles come from UI-thread button clicks, so this is safe
+        themeService.ModeChanged += ApplyTheme;
 
         Repository = repository;
         CoreServicesReady?.Invoke(repository);
@@ -66,7 +70,8 @@ public partial class App : Application
                 DataContext = new MainViewModel(
                     repository,
                     services.GetRequiredService<ILocalSyncService>(),
-                    themeService)
+                    themeService,
+                    qrScanner)
             };
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

@@ -30,6 +30,8 @@
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
+    <PackageReference Include="Xamarin.Google.MLKit.BarcodeScanning" />
+	<PackageReference Include="Xamarin.GooglePlayServices.MLKit.BarcodeScanning" />
   </ItemGroup>
 
   <ItemGroup>
