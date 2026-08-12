@@ -3,7 +3,7 @@
              xmlns:vm="using:Attendly.Desktop.Export"
              x:Class="Attendly.Desktop.Export.ExportView"
              x:DataType="vm:ExportViewModel">
-  <StackPanel Margin="24" Spacing="12" MaxWidth="420">
+  <StackPanel Margin="24" Spacing="12" >
     <TextBlock Text="Ekspor Absensi" FontSize="22" FontWeight="Bold"/>
     <TextBlock Text="Pilih kelas dan bulan, lalu ekspor sesuai format buku absensi asli." Opacity="0.7" TextWrapping="Wrap"/>
 
