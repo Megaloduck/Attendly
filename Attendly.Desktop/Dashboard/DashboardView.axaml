@@ -6,17 +6,17 @@
              x:DataType="vm:DashboardViewModel">
   <ScrollViewer>
     <StackPanel Margin="24" Spacing="20">
-      <TextBlock Text="Dashboard" FontSize="24" FontWeight="Bold"/>
+      <TextBlock Text="Dashboard" Classes="heading"/>
 
       <Grid ColumnDefinitions="300,*">
         <!-- Statistics ring: santri already assigned to a Kelas, at a glance -->
-        <Border Grid.Column="0" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" Padding="20" Margin="0,0,16,0">
+        <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,16,0">
           <StackPanel Spacing="16" HorizontalAlignment="Center">
             <TextBlock Text="Statistik" FontWeight="SemiBold" FontSize="15" HorizontalAlignment="Left"/>
             <Grid Width="160" Height="160">
               <controls:DonutProgress Percentage="{Binding AssignedPercentage}"
-                                       ProgressBrush="#2563EB"
-                                       TrackBrush="#E5E7EB"
+                                       ProgressBrush="{DynamicResource AccentBrush}"
+                                       TrackBrush="{DynamicResource BorderSubtleBrush}"
                                        StrokeThickness="16"/>
               <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
                 <TextBlock Text="{Binding AssignedPercentageDisplay}" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
@@ -36,22 +36,22 @@
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:DashboardStatCard">
-              <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,12,12">
+              <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,12,12">
                 <StackPanel Spacing="10" >
                     <StackPanel  Orientation="Horizontal">
                         <TextBlock Text="{Binding Value}" FontSize="24" FontWeight="Bold"
-                             Foreground="{Binding AccentHex, Converter={StaticResource HexToBrushConverter}}"/>
+                             Foreground="{Binding AccentBrushKey, Converter={StaticResource ResourceKeyToBrushConverter}}"/>
 
                         <Border Width="40" Height="40" CornerRadius="10" HorizontalAlignment="Right" 
-                                Background="{Binding BadgeBackgroundHex, Converter={StaticResource HexToBrushConverter}}">
+                                Background="{Binding BadgeBrushKey, Converter={StaticResource ResourceKeyToBrushConverter}}">
                             <controls:LucideIcon Kind="{Binding Icon}" Width="20" Height="20"
-                                                 Stroke="{Binding AccentHex, Converter={StaticResource HexToBrushConverter}}"
+                                                 Stroke="{Binding AccentBrushKey, Converter={StaticResource ResourceKeyToBrushConverter}}"
                                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         
                     </StackPanel>
                 
-                  <TextBlock Text="{Binding Label}" Opacity="0.7" FontSize="13"/>
+                  <TextBlock Text="{Binding Label}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
                 </StackPanel>
               </Border>
             </DataTemplate>
@@ -60,7 +60,7 @@
       </Grid>
 
       <!-- Santri per Kelas: label + proportional bar + count -->
-      <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="12" Padding="20">
+      <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
         <StackPanel Spacing="14">
           <TextBlock Text="Santri per Kelas" FontSize="16" FontWeight="SemiBold"/>
           <ItemsControl ItemsSource="{Binding PerTartil}">
@@ -81,3 +81,4 @@
     </StackPanel>
   </ScrollViewer>
 </UserControl>
+    

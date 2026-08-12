@@ -61,7 +61,7 @@ public partial class MonthlyGridView : UserControl
 
     /// <summary>Resolves a themed brush by resource key - same lookup chain a DynamicResource
     /// binding uses, just called from code since this table is built programmatically.
-    /// Falls back to the Light hex if the resource isn't found yet (e.g. called before this
+    /// Falls back to the given hex if the resource isn't found yet (e.g. called before this
     /// control is attached), so nothing ever renders blank.</summary>
     private IBrush GetBrush(string key, string fallbackHex) =>
         this.TryFindResource(key, out var value) && value is IBrush brush
@@ -77,9 +77,9 @@ public partial class MonthlyGridView : UserControl
         var data = ViewModel?.GridData;
         if (data is null) return;
 
-        var gridBorderBrush = GetBrush("BorderSubtleBrush", "#E2E5EA");
-        var headerBackground = GetBrush("GridHeaderBackgroundBrush", "#F7F8FA");
-        var stripeBackground = GetBrush("GridStripeBackgroundBrush", "#FAFBFC");
+        var gridBorderBrush = GetBrush("BorderSubtleBrush", "#E4DDD0");
+        var headerBackground = GetBrush("GridHeaderBackgroundBrush", "#EFE9DF");
+        var stripeBackground = GetBrush("GridStripeBackgroundBrush", "#F7F3EC");
 
         TableGrid.ColumnDefinitions.Add(new ColumnDefinition(NameColumnWidth, GridUnitType.Pixel));
         for (var d = 0; d < data.DaysInMonth; d++)
@@ -126,7 +126,7 @@ public partial class MonthlyGridView : UserControl
             FontWeight = FontWeight.SemiBold,
             HorizontalAlignment = isNameColumn ? HorizontalAlignment.Left : HorizontalAlignment.Center,
             TextAlignment = isNameColumn ? TextAlignment.Left : TextAlignment.Center,
-            Opacity = 0.75,
+            Foreground = GetBrush("TextSecondaryBrush", "#7A7367"),
         };
 
         TableGrid.Children.Add(border);
@@ -151,6 +151,7 @@ public partial class MonthlyGridView : UserControl
             Text = text,
             FontSize = 13,
             FontWeight = FontWeight.SemiBold,
+            Foreground = GetBrush("TextPrimaryBrush", "#2A2724"),
             VerticalAlignment = VerticalAlignment.Center,
         };
 
@@ -171,13 +172,13 @@ public partial class MonthlyGridView : UserControl
             MinHeight = 32,
         };
 
-        if (cell.DotColorHex is not null)
+        if (cell.StatusBrushKey is not null)
         {
             border.Child = new Ellipse
             {
                 Width = 10,
                 Height = 10,
-                Fill = new SolidColorBrush(Color.Parse(cell.DotColorHex)),
+                Fill = GetBrush(cell.StatusBrushKey, "#A29C90"),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             };

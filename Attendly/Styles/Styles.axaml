@@ -2,46 +2,72 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Attendly.Controls">
 
-  <!-- 44dp minimum tap target, applied app-wide so no button anywhere falls short. -->
+  <!-- 44dp minimum tap target, applied app-wide so no button anywhere falls short.
+       Accessibility floor, not a style choice - unaffected by the restyle. -->
   <Style Selector="Button">
     <Setter Property="MinHeight" Value="44"/>
     <Setter Property="MinWidth" Value="44"/>
   </Style>
 
   <!-- Default look for every LucideIcon: Lucide's actual stroke style (round caps/joins,
-       2px stroke, no fill), scaled uniformly, 24x24 unless a usage overrides it. -->
+       2px stroke, no fill), scaled uniformly, 24x24 unless a usage overrides it.
+       Stroke now defaults to TextSecondaryBrush rather than flat black, per the
+       Identity Statement's Components section (§8) - icons read as quiet UI chrome,
+       not as decoration competing with the accent. -->
   <Style Selector="controls|LucideIcon">
     <Setter Property="StrokeThickness" Value="2"/>
     <Setter Property="StrokeLineCap" Value="Round"/>
     <Setter Property="StrokeJoin" Value="Round"/>
     <Setter Property="Stretch" Value="Uniform"/>
-    <Setter Property="Stroke" Value="Black"/>
+    <Setter Property="Stroke" Value="{DynamicResource TextSecondaryBrush}"/>
     <Setter Property="Width" Value="24"/>
     <Setter Property="Height" Value="24"/>
   </Style>
 
-  <!-- Rounded, comfortable text boxes app-wide (search box, pairing/roster forms). -->
+  <!-- Rounded, comfortable text boxes app-wide (search box, pairing/roster forms).
+       Corner radius trimmed from 10 to 8 and colors now token-driven, per §6/§8 of the
+       Identity Statement (subtle radius, not "pill"; clean unobtrusive inputs). -->
   <Style Selector="TextBox">
-    <Setter Property="CornerRadius" Value="10"/>
+    <Setter Property="CornerRadius" Value="8"/>
     <Setter Property="Padding" Value="10,8"/>
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
   </Style>
 
   <!-- Thin rounded progress bars - used for per-kelas attendance completion. -->
   <Style Selector="ProgressBar">
     <Setter Property="CornerRadius" Value="3"/>
-    <Setter Property="Foreground" Value="#2563EB"/>
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
   </Style>
 
   <!-- Primary action buttons (e.g. "Tandai Semua Hadir", "Hubungkan"). -->
   <Style Selector="Button.primary">
-    <Setter Property="Background" Value="#2563EB"/>
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
     <Setter Property="Foreground" Value="White"/>
     <Setter Property="CornerRadius" Value="8"/>
   </Style>
 
+  <!-- ==================== Display / Heading text (Lora) ====================
+       Per Identity Statement §5: Lora only above 15px, only for these two roles.
+       Everything else stays on the app's default FontFamily (Inter). -->
+  <Style Selector="TextBlock.display">
+    <Setter Property="FontFamily" Value="{DynamicResource HeadingFontFamily}"/>
+    <Setter Property="FontSize" Value="28"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+  </Style>
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontFamily" Value="{DynamicResource HeadingFontFamily}"/>
+    <Setter Property="FontSize" Value="20"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+  </Style>
+
   <!-- Desktop sidebar nav buttons: full-width, flat, highlighted when active.
-       Colors come from the fixed sidebar palette in App.axaml, not the theme
-       dictionaries - the sidebar stays one color regardless of light/dark mode. -->
+       Colors now come from the shared theme dictionaries, not a fixed non-theming
+       Sidebar palette - the sidebar re-themes with everything else and matches
+       mobile's nav coloring rule exactly (§7 of the Identity Statement). -->
   <Style Selector="Button.nav-item">
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="Padding" Value="20,10"/>
@@ -49,47 +75,64 @@
     <Setter Property="Margin" Value="8,2"/>
   </Style>
   <Style Selector="Button.nav-item:pointerover">
-    <Setter Property="Background" Value="{DynamicResource SidebarHoverBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}"/>
   </Style>
   <Style Selector="Button.nav-item.active">
-    <Setter Property="Background" Value="{DynamicResource SidebarActiveBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}"/>
   </Style>
 
-  <!-- ==================== Flat enterprise data-table tokens ====================
-       New for the Desktop admin restyle: flat 2D containers with hairline borders
-       instead of shadows/elevation, built for data density over visual flair.
-       Scoped to FlatCardBackgroundBrush/PageBackgroundBrush (not the shared
-       CardBackgroundBrush), so this never touches the mobile teacher app. -->
+  <!-- Icon/label color per nav-item state - handled here so DesktopShellView.axaml no
+       longer hardcodes a Stroke/Foreground on the icon or label directly (that would
+       override these Setters, since local XAML values always win over styles). -->
+  <Style Selector="Button.nav-item controls|LucideIcon">
+    <Setter Property="Stroke" Value="{DynamicResource TextSecondaryBrush}"/>
+  </Style>
+  <Style Selector="Button.nav-item TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+  </Style>
+  <Style Selector="Button.nav-item.active controls|LucideIcon">
+    <Setter Property="Stroke" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+  <Style Selector="Button.nav-item.active TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+
+  <!-- ==================== Flat, low-elevation data-table tokens ====================
+       Contrast and spacing over shadows/elevation - built for data density without
+       looking like a floating card stack. Now points at the shared SurfaceBrush/
+       BorderSubtleBrush tokens instead of the old Desktop-only FlatCardBackgroundBrush,
+       per §9 of the Identity Statement (one card token, not two). -->
 
   <Style Selector="Border.flat-card">
-    <Setter Property="Background" Value="{DynamicResource FlatCardBackgroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="CornerRadius" Value="10"/>
+    <Setter Property="CornerRadius" Value="8"/>
   </Style>
 
   <!-- KPI summary card: one big number + a label, used in threes at the bottom of a page. -->
   <Style Selector="Border.kpi-card">
-    <Setter Property="Background" Value="{DynamicResource FlatCardBackgroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="CornerRadius" Value="10"/>
+    <Setter Property="CornerRadius" Value="8"/>
     <Setter Property="Padding" Value="18"/>
   </Style>
   <Style Selector="TextBlock.kpi-value">
     <Setter Property="FontSize" Value="32"/>
     <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
   </Style>
   <Style Selector="TextBlock.kpi-label">
     <Setter Property="FontSize" Value="12"/>
     <Setter Property="FontWeight" Value="SemiBold"/>
-    <Setter Property="Opacity" Value="0.55"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
     <Setter Property="LetterSpacing" Value="1"/>
   </Style>
 
   <!-- Filter bar: the strip of dropdowns above a data table. -->
   <Style Selector="Border.filter-bar">
-    <Setter Property="Background" Value="{DynamicResource FlatCardBackgroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="CornerRadius" Value="8"/>
@@ -100,20 +143,24 @@
     <Setter Property="MinHeight" Value="36"/>
   </Style>
 
-  <!-- Status dot - Present/Absent/Leave/Sick/Libur, colored per-cell in code-behind. -->
+  <!-- Status dot - Present/Absent/Leave/Sick/Libur, colored per-cell in code-behind
+       (against the muted Status*Brush palette once MonthlyGridViewModel is updated
+       in §10 step 8). -->
   <Style Selector="Ellipse.status-dot">
     <Setter Property="Width" Value="10"/>
     <Setter Property="Height" Value="10"/>
   </Style>
 
-    <!-- Mobile bottom dock buttons: transparent, no corner radius, icon+label colored via the item's IsActive binding. -->
-<Style Selector="Button.dock-item">
-  <Setter Property="Background" Value="Transparent"/>
-  <Setter Property="Padding" Value="4,6"/>
-  <Setter Property="CornerRadius" Value="0"/>
-</Style>
-<Style Selector="Button.dock-item:pointerover">
-  <Setter Property="Background" Value="Transparent"/>
-</Style>
+  <!-- Mobile bottom dock buttons: transparent, no corner radius, icon+label colored via
+       the item's IsActive binding (ActiveToDockBrushConverter - still on the old hardcoded
+       blue pair pending §10 step 6; unaffected by this file). -->
+  <Style Selector="Button.dock-item">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Padding" Value="4,6"/>
+    <Setter Property="CornerRadius" Value="0"/>
+  </Style>
+  <Style Selector="Button.dock-item:pointerover">
+    <Setter Property="Background" Value="Transparent"/>
+  </Style>
 
 </Styles>

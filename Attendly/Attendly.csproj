@@ -24,4 +24,8 @@
 	<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 	<PackageReference Include="sqlite-net-pcl" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\Fonts\" />
+  </ItemGroup>
 </Project>

@@ -15,9 +15,9 @@ namespace Attendly.Desktop.Dashboard;
 public sealed record TartilCountViewModel(string DisplayName, int Count, double PercentOfTotal);
 
 /// <summary>One icon-badge stat card in the top row (Total Santri, Laki-laki, etc.).
-/// AccentHex colors the icon/number; BadgeBackgroundHex is the light tint behind the icon -
-/// both precomputed here rather than derived in XAML, so the palette stays a single source of truth.</summary>
-public sealed record DashboardStatCard(string Label, int Value, LucideIconKind Icon, string AccentHex, string BadgeBackgroundHex);
+/// AccentBrushKey/BadgeBrushKey are theme resource keys (resolved by
+/// ResourceKeyToBrushConverter), not literal hex - see Identity Statement §10 step 7.</summary>
+public sealed record DashboardStatCard(string Label, int Value, LucideIconKind Icon, string AccentBrushKey, string BadgeBrushKey);
 
 public partial class DashboardViewModel : ViewModelBase
 {
@@ -58,13 +58,17 @@ public partial class DashboardViewModel : ViewModelBase
 
         var devices = await _repository.GetPairedDevicesAsync();
 
-        // Colors match what the app already used for these categories (Perempuan pink,
-        // Unassigned amber, etc.) - restyled as badges, not a new palette.
-        StatCards.Add(new DashboardStatCard("Total Santri", TotalSantri, LucideIconKind.Users, "#2563EB", "#DBEAFE"));
-        StatCards.Add(new DashboardStatCard("Laki-laki", lakiLaki, LucideIconKind.Users, "#16A34A", "#DCFCE7"));
-        StatCards.Add(new DashboardStatCard("Perempuan", perempuan, LucideIconKind.Users, "#DB2777", "#FCE7F3"));
-        StatCards.Add(new DashboardStatCard("Belum Ditentukan", unassigned, LucideIconKind.CircleAlert, "#D97706", "#FEF3C7"));
-        StatCards.Add(new DashboardStatCard("Perangkat Terhubung", devices.Count, LucideIconKind.QrCode, "#7C3AED", "#EDE9FE"));
+        // Per Identity Statement §3: the accent color is reserved for the one headline
+        // metric, and every other card's color choice has to mean something (warning =
+        // needs attention, success = healthy/connected) rather than just being "a
+        // different hue per card" the way the old #2563EB/#16A34A/#DB2777/#D97706/#7C3AED
+        // set was. Laki-laki/Perempuan are plain counts with no status to signal, so they
+        // stay neutral rather than being arbitrarily color-coded.
+        StatCards.Add(new DashboardStatCard("Total Santri", TotalSantri, LucideIconKind.Users, "AccentBrush", "AccentSoftBrush"));
+        StatCards.Add(new DashboardStatCard("Laki-laki", lakiLaki, LucideIconKind.Users, "TextPrimaryBrush", "SurfaceMutedBrush"));
+        StatCards.Add(new DashboardStatCard("Perempuan", perempuan, LucideIconKind.Users, "TextPrimaryBrush", "SurfaceMutedBrush"));
+        StatCards.Add(new DashboardStatCard("Belum Ditentukan", unassigned, LucideIconKind.CircleAlert, "StatusWarningBrush", "SurfaceMutedBrush"));
+        StatCards.Add(new DashboardStatCard("Perangkat Terhubung", devices.Count, LucideIconKind.QrCode, "StatusSuccessBrush", "SurfaceMutedBrush"));
 
         foreach (TartilLevel level in Enum.GetValues<TartilLevel>())
         {

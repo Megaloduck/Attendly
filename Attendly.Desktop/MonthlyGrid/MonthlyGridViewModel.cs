@@ -10,7 +10,10 @@ using Attendly.Models;
 
 namespace Attendly.Desktop.MonthlyGrid;
 
-public sealed record LegendItemViewModel(string DisplayText, string ColorHex);
+/// <summary>ColorBrushKey is a theme resource key ("StatusSuccessBrush", etc.), resolved by
+/// ResourceKeyToBrushConverter in XAML - same fix applied to Dashboard's stat cards
+/// (Identity Statement §10 step 7), now applied here for step 8.</summary>
+public sealed record LegendItemViewModel(string DisplayText, string ColorBrushKey);
 
 /// <summary>One day cell in the flat attendance table - a colored status dot (or none,
 /// if not yet marked). No letter code is drawn on the grid itself; the dot's color plus
@@ -18,7 +21,7 @@ public sealed record LegendItemViewModel(string DisplayText, string ColorHex);
 public sealed class MonthlyGridCell
 {
     public AttendanceStatus? Status { get; init; }
-    public string? DotColorHex { get; init; }
+    public string? StatusBrushKey { get; init; }
     public string? TooltipText { get; init; }
 }
 
@@ -38,16 +41,18 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
 {
     private readonly AttendanceRepository _repository;
 
-    /// <summary>Saturated dot colors. Present/Absent/Leave map to green/red/orange per the
-    /// flat data-table brief; Sakit and Libur get their own colors too since the real domain
-    /// has five states, not three - Sakit is folded into the "Leave" KPI card below.</summary>
-    private static readonly Dictionary<AttendanceStatus, string> DotColors = new()
+    /// <summary>Resource keys, not literal hex - resolved at render time against whichever
+    /// theme dictionary (Light/Dark) is active, via ResourceKeyToBrushConverter (legend) and
+    /// MonthlyGridView.axaml.cs's GetBrush() (table cells). Sakit keeps its own distinct key
+    /// (StatusInfoBrush) even though its count folds into the "Leave" KPI card - the five
+    /// attendance states are still five different dot colors here.</summary>
+    private static readonly Dictionary<AttendanceStatus, string> StatusBrushKeys = new()
     {
-        [AttendanceStatus.Hadir] = "#16A34A",  // Present
-        [AttendanceStatus.Alpha] = "#DC2626",  // Absent
-        [AttendanceStatus.Izin] = "#D97706",   // Leave (permission)
-        [AttendanceStatus.Sakit] = "#2563EB",  // Sick - grouped into "Leave" for the KPI cards
-        [AttendanceStatus.Libur] = "#9CA3AF",  // Non-session day
+        [AttendanceStatus.Hadir] = "StatusSuccessBrush",
+        [AttendanceStatus.Alpha] = "StatusErrorBrush",
+        [AttendanceStatus.Izin] = "StatusWarningBrush",
+        [AttendanceStatus.Sakit] = "StatusInfoBrush",
+        [AttendanceStatus.Libur] = "StatusNeutralBrush",
     };
 
     public IReadOnlyList<TartilOption> AvailableTartil { get; } =
@@ -117,7 +122,7 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
                     cells.Add(new MonthlyGridCell
                     {
                         Status = record.Status,
-                        DotColorHex = DotColors[record.Status],
+                        StatusBrushKey = StatusBrushKeys[record.Status],
                         TooltipText = $"Tgl {day}: {record.Status.ToDisplayLabel()}",
                     });
                 }
@@ -140,12 +145,12 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
         PresentPercent = countedTotal == 0 ? 0 : PresentCount / (double)countedTotal * 100;
 
         LegendItems.Clear();
-        LegendItems.Add(new LegendItemViewModel("Hadir (Present)", DotColors[AttendanceStatus.Hadir]));
-        LegendItems.Add(new LegendItemViewModel("Alpha (Absent)", DotColors[AttendanceStatus.Alpha]));
-        LegendItems.Add(new LegendItemViewModel("Izin (Leave)", DotColors[AttendanceStatus.Izin]));
-        LegendItems.Add(new LegendItemViewModel("Sakit (Sick)", DotColors[AttendanceStatus.Sakit]));
-        LegendItems.Add(new LegendItemViewModel("Libur (Non-session)", DotColors[AttendanceStatus.Libur]));
+        LegendItems.Add(new LegendItemViewModel("Hadir (Present)", StatusBrushKeys[AttendanceStatus.Hadir]));
+        LegendItems.Add(new LegendItemViewModel("Alpha (Absent)", StatusBrushKeys[AttendanceStatus.Alpha]));
+        LegendItems.Add(new LegendItemViewModel("Izin (Leave)", StatusBrushKeys[AttendanceStatus.Izin]));
+        LegendItems.Add(new LegendItemViewModel("Sakit (Sick)", StatusBrushKeys[AttendanceStatus.Sakit]));
+        LegendItems.Add(new LegendItemViewModel("Libur (Non-session)", StatusBrushKeys[AttendanceStatus.Libur]));
 
         IsLoading = false;
     }
-}   
+}

@@ -1,20 +1,35 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <SolidColorBrush x:Key="CardBackgroundBrush" Color="#27272A"/>
+  <!-- ==================== Attendly UI Identity v1 - shared tokens ====================
+       Mirrors LightTheme.axaml's key set exactly - see that file's header comment and
+       Attendly_UI_Identity_Statement_v1.md for rationale. -->
 
-  <SolidColorBrush x:Key="PageBackgroundBrush" Color="#16181D"/>
-  <SolidColorBrush x:Key="FlatCardBackgroundBrush" Color="#212327"/>
-  <SolidColorBrush x:Key="BorderSubtleBrush" Color="#33363D"/>
+  <SolidColorBrush x:Key="AppBackgroundBrush" Color="#1C1A17"/>
+  <SolidColorBrush x:Key="SurfaceBrush" Color="#242220"/>
+  <SolidColorBrush x:Key="SurfaceMutedBrush" Color="#2C2924"/>
+  <SolidColorBrush x:Key="BorderSubtleBrush" Color="#38332C"/>
 
-  <SolidColorBrush x:Key="GridHeaderBackgroundBrush" Color="#2A2D33"/>
-  <SolidColorBrush x:Key="GridStripeBackgroundBrush" Color="#1C1E23"/>
+  <SolidColorBrush x:Key="TextPrimaryBrush" Color="#EDE7DD"/>
+  <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9A9184"/>
 
-    
-            <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#1E293B"/>
-            <SolidColorBrush x:Key="SidebarHoverBrush" Color="#334155"/>
-            <SolidColorBrush x:Key="SidebarActiveBrush" Color="#2563EB"/>
-            <SolidColorBrush x:Key="SidebarTextBrush" Color="#F1F5F9"/>
-            <SolidColorBrush x:Key="SidebarMutedTextBrush" Color="#94A3B8"/>
+  <SolidColorBrush x:Key="AccentBrush" Color="#D97F5E"/>
+  <SolidColorBrush x:Key="AccentSoftBrush" Color="#3A2A22"/>
+
+  <SolidColorBrush x:Key="StatusSuccessBrush" Color="#8AAE8C"/>
+  <SolidColorBrush x:Key="StatusWarningBrush" Color="#D3A162"/>
+  <SolidColorBrush x:Key="StatusErrorBrush" Color="#C97166"/>
+  <SolidColorBrush x:Key="StatusInfoBrush" Color="#96A8BE"/>
+  <SolidColorBrush x:Key="StatusNeutralBrush" Color="#857D70"/>
+
+  <!-- MonthlyGridView's programmatic table (Desktop) - see LightTheme.axaml's comment. -->
+  <SolidColorBrush x:Key="GridHeaderBackgroundBrush" Color="#2C2924"/>
+  <SolidColorBrush x:Key="GridStripeBackgroundBrush" Color="#1C1A17"/>
+
+  <!-- ==================== Transitional aliases ====================
+       See LightTheme.axaml's comment - same keys, same reasoning. -->
+  <SolidColorBrush x:Key="CardBackgroundBrush" Color="#242220"/>
+  <SolidColorBrush x:Key="FlatCardBackgroundBrush" Color="#242220"/>
+  <SolidColorBrush x:Key="PageBackgroundBrush" Color="#1C1A17"/>
 
 </ResourceDictionary>

@@ -1,27 +1,43 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <SolidColorBrush x:Key="CardBackgroundBrush" Color="#F3F4F6"/>
+  <!-- ==================== Attendly UI Identity v1 - shared tokens ====================
+       One token set for both Attendly (mobile) and Attendly.Desktop (admin) - see
+       Attendly_UI_Identity_Statement_v1.md for the full rationale and the retirement
+       table (§9) explaining what this replaces. No platform-specific keys below. -->
 
-  <!-- Flat enterprise dashboard palette (Desktop admin only) - deliberately separate
-       from CardBackgroundBrush above so this restyle never touches mobile. -->
-  <SolidColorBrush x:Key="PageBackgroundBrush" Color="#EEF1F5"/>
+  <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F7F3EC"/>
+  <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="SurfaceMutedBrush" Color="#EFE9DF"/>
+  <SolidColorBrush x:Key="BorderSubtleBrush" Color="#E4DDD0"/>
+
+  <SolidColorBrush x:Key="TextPrimaryBrush" Color="#2A2724"/>
+  <SolidColorBrush x:Key="TextSecondaryBrush" Color="#7A7367"/>
+
+  <SolidColorBrush x:Key="AccentBrush" Color="#BD5B3D"/>
+  <SolidColorBrush x:Key="AccentSoftBrush" Color="#F1DED4"/>
+
+  <SolidColorBrush x:Key="StatusSuccessBrush" Color="#6E8F73"/>
+  <SolidColorBrush x:Key="StatusWarningBrush" Color="#C08A4E"/>
+  <SolidColorBrush x:Key="StatusErrorBrush" Color="#B2564A"/>
+  <SolidColorBrush x:Key="StatusInfoBrush" Color="#7C8FA6"/>
+  <SolidColorBrush x:Key="StatusNeutralBrush" Color="#A29C90"/>
+
+  <!-- MonthlyGridView's programmatic table (Desktop) reads these two by exact name via
+       GetBrush() in code-behind - keep the key names. Derived from the tokens above
+       (SurfaceMuted for the header row, AppBackground for the zebra stripe) rather than
+       independently hand-picked, per the Identity Statement's retirement table. -->
+  <SolidColorBrush x:Key="GridHeaderBackgroundBrush" Color="#EFE9DF"/>
+  <SolidColorBrush x:Key="GridStripeBackgroundBrush" Color="#F7F3EC"/>
+
+  <!-- ==================== Transitional aliases ====================
+       Old keys still referenced by views not yet migrated (Roster, ActivityLog,
+       MobilePairing, MainView, DashboardView, DesktopPairingView, MonthlyGridView.axaml's
+       outer Border - see Identity Statement §10 step 9). Point them at the new tokens so
+       nothing breaks mid-migration; delete once every view references the canonical
+       names directly. -->
+  <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
   <SolidColorBrush x:Key="FlatCardBackgroundBrush" Color="#FFFFFF"/>
-  <SolidColorBrush x:Key="BorderSubtleBrush" Color="#E2E5EA"/>
+  <SolidColorBrush x:Key="PageBackgroundBrush" Color="#F7F3EC"/>
 
-  <!-- MonthlyGridView's programmatic table - previously hardcoded static brushes in
-       code-behind (didn't re-theme). Header/stripe get their own keys since nothing
-       existing matches those exact tints; the cell border reuses BorderSubtleBrush
-       so the grid's hairlines match every other flat-card border in the app. -->
-  <SolidColorBrush x:Key="GridHeaderBackgroundBrush" Color="#F7F8FA"/>
-  <SolidColorBrush x:Key="GridStripeBackgroundBrush" Color="#FAFBFC"/>
-
-
-    
-            <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#1E293B"/>
-            <SolidColorBrush x:Key="SidebarHoverBrush" Color="#334155"/>
-            <SolidColorBrush x:Key="SidebarActiveBrush" Color="#2563EB"/>
-            <SolidColorBrush x:Key="SidebarTextBrush" Color="#F1F5F9"/>
-            <SolidColorBrush x:Key="SidebarMutedTextBrush" Color="#94A3B8"/>
-
-</ResourceDictionary>       
+</ResourceDictionary>

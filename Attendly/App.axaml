@@ -16,7 +16,10 @@
                 <ResourceInclude x:Key="Dark" Source="avares://Attendly/Themes/DarkTheme.axaml"/>
             </ResourceDictionary.ThemeDictionaries>
 
-            
+            <!-- Display/Heading serif, per Identity Statement §5. Not theme-dependent -
+                 same face in Light and Dark, so it lives outside ThemeDictionaries
+                 alongside the converters below. -->
+            <FontFamily x:Key="HeadingFontFamily">avares://Attendly/Assets/Fonts/Lora.ttf#Lora</FontFamily>
 
             <conv:StatusChipBrushConverter x:Key="StatusChipBrushConverter"/>
             <conv:SyncStateToBrushConverter x:Key="SyncStateToBrushConverter"/>
@@ -24,6 +27,7 @@
             <conv:ThemeModeToIconKindConverter x:Key="ThemeModeToIconKindConverter"/>
             <conv:ThemeModeToLabelConverter x:Key="ThemeModeToLabelConverter"/>
             <conv:HexToBrushConverter x:Key="HexToBrushConverter"/>
+            <conv:ResourceKeyToBrushConverter x:Key="ResourceKeyToBrushConverter"/>
             <conv:ActiveToDockBrushConverter x:Key="ActiveToDockBrushConverter"/>
         </ResourceDictionary>
     </Application.Resources>

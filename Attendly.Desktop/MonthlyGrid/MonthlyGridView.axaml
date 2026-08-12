@@ -4,11 +4,11 @@
              xmlns:exp="using:Attendly.Desktop.Export"
              x:Class="Attendly.Desktop.MonthlyGrid.MonthlyGridView"
              x:DataType="vm:MonthlyGridViewModel">
-  <Border Background="{DynamicResource PageBackgroundBrush}">
+  <Border Background="{DynamicResource AppBackgroundBrush}">
     <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="24">
       <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
-        <TextBlock Text="Absensi Bulanan" FontSize="24" FontWeight="Bold"/>
-        <TextBlock Text="Rekap kehadiran satu kelas dalam satu bulan." Opacity="0.7"/>
+        <TextBlock Text="Absensi Bulanan" Classes="heading"/>
+        <TextBlock Text="Rekap kehadiran satu kelas dalam satu bulan." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
       </StackPanel>
 
       <!-- Filter bar: Tartil / bulan / tahun, plus the color key -->
@@ -33,8 +33,8 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:LegendItemViewModel">
                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                  <Ellipse Classes="status-dot" Fill="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"/>
-                  <TextBlock Text="{Binding DisplayText}" FontSize="12" Opacity="0.7"/>
+                  <Ellipse Classes="status-dot" Fill="{Binding ColorBrushKey, Converter={StaticResource ResourceKeyToBrushConverter}}"/>
+                  <TextBlock Text="{Binding DisplayText}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
                 </StackPanel>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
@@ -50,29 +50,29 @@
         </ScrollViewer>
       </Border>
 
-      <TextBlock Grid.Row="2" Text="Memuat..." IsVisible="{Binding IsLoading}" Opacity="0.6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      <TextBlock Grid.Row="2" Text="Memuat..." IsVisible="{Binding IsLoading}" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
       <!-- Three KPI summary cards -->
       <Grid Grid.Row="3" ColumnDefinitions="*,*,*" Margin="0,16,0,0">
         <Border Grid.Column="0" Classes="kpi-card" Margin="0,0,8,0">
           <StackPanel Spacing="6">
             <TextBlock Text="HADIR" Classes="kpi-label"/>
-            <TextBlock Text="{Binding PresentCount}" Classes="kpi-value" Foreground="#16A34A"/>
-            <TextBlock Text="{Binding PresentPercent, StringFormat='{}{0:0}% dari sesi tercatat'}" FontSize="12" Opacity="0.6"/>
+            <TextBlock Text="{Binding PresentCount}" Classes="kpi-value" Foreground="{DynamicResource StatusSuccessBrush}"/>
+            <TextBlock Text="{Binding PresentPercent, StringFormat='{}{0:0}% dari sesi tercatat'}" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="kpi-card" Margin="8,0">
           <StackPanel Spacing="6">
             <TextBlock Text="ALPHA" Classes="kpi-label"/>
-            <TextBlock Text="{Binding AbsentCount}" Classes="kpi-value" Foreground="#DC2626"/>
-            <TextBlock Text="Tanpa keterangan" FontSize="12" Opacity="0.6"/>
+            <TextBlock Text="{Binding AbsentCount}" Classes="kpi-value" Foreground="{DynamicResource StatusErrorBrush}"/>
+            <TextBlock Text="Tanpa keterangan" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
           </StackPanel>
         </Border>
         <Border Grid.Column="2" Classes="kpi-card" Margin="8,0,0,0">
           <StackPanel Spacing="6">
             <TextBlock Text="IZIN + SAKIT" Classes="kpi-label"/>
-            <TextBlock Text="{Binding LeaveCount}" Classes="kpi-value" Foreground="#D97706"/>
-            <TextBlock Text="Izin dan sakit digabung" FontSize="12" Opacity="0.6"/>
+            <TextBlock Text="{Binding LeaveCount}" Classes="kpi-value" Foreground="{DynamicResource StatusWarningBrush}"/>
+            <TextBlock Text="Izin dan sakit digabung" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
           </StackPanel>
         </Border>
       </Grid>

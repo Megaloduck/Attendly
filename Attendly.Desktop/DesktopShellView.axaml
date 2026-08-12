@@ -4,10 +4,15 @@
              xmlns:controls="using:Attendly.Controls"
              x:Class="Attendly.Desktop.DesktopShellView"
              x:DataType="local:DesktopShellViewModel">
-  <Grid ColumnDefinitions="220,*">
-    <Border Grid.Column="0" Background="{StaticResource SidebarBackgroundBrush}">
+  <Grid ColumnDefinitions="220,*" Background="{DynamicResource AppBackgroundBrush}">
+
+    <!-- Sidebar: same control, same position, same items (Identity Statement §2/§7) -
+         now a quiet canvas-toned panel instead of a fixed navy block, separated from
+         the content column by a single hairline border rather than a color contrast. -->
+    <Border Grid.Column="0" Background="{DynamicResource AppBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,1,0">
       <Grid RowDefinitions="Auto,*,Auto" Margin="0,16,0,16">
-        <TextBlock Grid.Row="0" Text="Attendly" Foreground="{StaticResource SidebarTextBrush}" FontSize="20" FontWeight="Bold" Margin="20,0,0,24"/>
+        <TextBlock Grid.Row="0" Text="Attendly" Classes="heading" Margin="20,0,0,24"/>
 
         <ItemsControl Grid.Row="1" ItemsSource="{Binding NavItems}">
           <ItemsControl.ItemTemplate>
@@ -18,8 +23,8 @@
                       HorizontalAlignment="Stretch"
                       HorizontalContentAlignment="Left">
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                  <controls:LucideIcon Kind="{Binding Icon}" Width="18" Height="18" Stroke="{StaticResource SidebarTextBrush}"/>
-                  <TextBlock Text="{Binding Label}" Foreground="{StaticResource SidebarTextBrush}"/>
+                  <controls:LucideIcon Kind="{Binding Icon}" Width="18" Height="18"/>
+                  <TextBlock Text="{Binding Label}"/>
                 </StackPanel>
               </Button>
             </DataTemplate>
@@ -31,8 +36,8 @@
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Left">
           <StackPanel Orientation="Horizontal" Spacing="10">
-            <controls:LucideIcon Kind="{Binding ThemeMode, Converter={StaticResource ThemeModeToIconKindConverter}}" Width="18" Height="18" Stroke="{StaticResource SidebarTextBrush}"/>
-            <TextBlock Text="{Binding ThemeMode, Converter={StaticResource ThemeModeToLabelConverter}}" Foreground="{StaticResource SidebarTextBrush}"/>
+            <controls:LucideIcon Kind="{Binding ThemeMode, Converter={StaticResource ThemeModeToIconKindConverter}}" Width="18" Height="18"/>
+            <TextBlock Text="{Binding ThemeMode, Converter={StaticResource ThemeModeToLabelConverter}}"/>
           </StackPanel>
         </Button>
       </Grid>
