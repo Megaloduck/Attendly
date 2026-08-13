@@ -3,11 +3,17 @@
              xmlns:vm="using:Attendly.Desktop.Export"
              x:Class="Attendly.Desktop.Export.ExportView"
              x:DataType="vm:ExportViewModel">
-  <StackPanel Margin="24" Spacing="12" >
-    <TextBlock Text="Ekspor Absensi" FontSize="22" FontWeight="Bold"/>
-    <TextBlock Text="Pilih kelas dan bulan, lalu ekspor sesuai format buku absensi asli." Opacity="0.7" TextWrapping="Wrap"/>
+    <Border Background="{DynamicResource AppBackgroundBrush}">
+        <Grid RowDefinitions="Auto,*" Margin="24" >
+            <!-- Header Section -->
+         <StackPanel Spacing="4" Margin="0,0,0,16">
+             <TextBlock Text="Ekspor Absensi" Classes="heading" VerticalAlignment="Center"/>
+             <TextBlock Text="Pilih kelas dan bulan, lalu ekspor sesuai format buku absensi asli." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>  
+        </StackPanel>
 
-    <TextBlock Text="Kelas" FontWeight="SemiBold"/>
+            <!-- Content Section -->
+            <StackPanel Grid.Row="1" Spacing="4" >
+                 <TextBlock Text="Kelas" FontWeight="SemiBold"/>
     <ComboBox ItemsSource="{Binding AvailableTartil}" SelectedItem="{Binding SelectedTartil}" HorizontalAlignment="Stretch">
       <ComboBox.ItemTemplate>
         <DataTemplate x:DataType="vm:TartilOption">
@@ -17,11 +23,11 @@
     </ComboBox>
 
     <Grid ColumnDefinitions="*,*">
-      <StackPanel Grid.Column="0" Margin="0,0,6,0">
+      <StackPanel Grid.Column="0" Margin="0,0,6,0" Spacing="4" >
         <TextBlock Text="Bulan" FontWeight="SemiBold"/>
         <NumericUpDown Value="{Binding SelectedMonth}" Minimum="1" Maximum="12"/>
       </StackPanel>
-      <StackPanel Grid.Column="1" Margin="6,0,0,0">
+      <StackPanel Grid.Column="1" Margin="6,0,0,0" Spacing="4" >
         <TextBlock Text="Tahun" FontWeight="SemiBold"/>
         <NumericUpDown Value="{Binding SelectedYear}" Minimum="2020" Maximum="2100"/>
       </StackPanel>
@@ -33,5 +39,9 @@
     </StackPanel>
 
     <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Opacity="0.85"/>
-  </StackPanel>
+            </StackPanel>
+    
+    </Grid>
+    </Border>
+ 
 </UserControl>  

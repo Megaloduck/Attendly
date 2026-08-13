@@ -1,22 +1,27 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+    <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Attendly.Desktop.ActivityLog"
              xmlns:coreVm="using:Attendly.ViewModels"
              xmlns:controls="using:Attendly.Controls"
              x:Class="Attendly.Desktop.ActivityLog.ActivityLogView"
              x:DataType="vm:ActivityLogViewModel">
-  <Grid RowDefinitions="Auto,*" Margin="24" Background="{DynamicResource AppBackgroundBrush}">
+        <Border Background="{DynamicResource AppBackgroundBrush}">
+            <Grid RowDefinitions="Auto,*" Margin="24" >
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,16">
-      <TextBlock Grid.Column="0" Text="Riwayat Perubahan" Classes="heading" VerticalAlignment="Center"/>
-      <TextBox Grid.Column="1" Width="240" Watermark="Cari guru atau santri..." Text="{Binding SearchText}" Margin="0,0,8,0"/>
+        <!-- Header Section -->
+        <StackPanel Grid.Column="0" Spacing="4" >
+            <TextBlock  Text="Riwayat Perubahan" Classes="heading" VerticalAlignment="Center"/>
+            <TextBlock Text="Rekam jejak perubahan data dan aktivitas pengguna." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+        </StackPanel>     
+      <TextBox Grid.Column="1" Width="240" Height="45" Watermark="Cari guru atau santri..." Text="{Binding SearchText}" Margin="0,0,8,0"/>
       <Button Grid.Column="2" Command="{Binding RefreshCommand}">
-        <StackPanel Orientation="Horizontal" Spacing="6">
-          <controls:LucideIcon Kind="RefreshCw" Width="16" Height="16"/>
-          <TextBlock Text="Refresh"/>
+        <StackPanel Orientation="Horizontal" Spacing="6" Height="10" VerticalAlignment="Center" HorizontalAlignment="Center">
+          <controls:LucideIcon Kind="RefreshCw" Width="16" Height="16" />
+          
         </StackPanel>
       </Button>
     </Grid>
-
+                <!-- Content Section -->
     <Grid Grid.Row="1">
       <ScrollViewer>
         <ItemsControl ItemsSource="{Binding Entries}">
@@ -46,4 +51,6 @@
       <TextBlock Text="Belum ada perubahan tercatat" IsVisible="{Binding IsEmpty}" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Grid>
   </Grid>
+    </Border>
+  
 </UserControl>

@@ -11,9 +11,7 @@
             <!-- Header Section - Row 0 -->
             <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
                 <TextBlock Text="Data Santri" Classes="heading"/>
-                <TextBlock Text="Data, Status dan Identitas santri." 
-                           Foreground="{DynamicResource TextSecondaryBrush}" 
-                           TextWrapping="Wrap"/>
+                <TextBlock Text="Kelola informasi status dan Identitas santri." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
             </StackPanel>
                 <!-- Main Content - Left Panel - Row 1 -->
             <Grid Grid.Row="1"> 
@@ -85,8 +83,7 @@
                 <Border Grid.Column="1" 
                         Background="{DynamicResource SurfaceBrush}" 
                         BorderBrush="{DynamicResource BorderSubtleBrush}" 
-                        BorderThickness="1" 
-                
+                        BorderThickness="1"                 
                         Padding="16"
                         IsVisible="{Binding Editing, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
                     <ContentControl Content="{Binding Editing}"/>
