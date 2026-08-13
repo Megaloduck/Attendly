@@ -13,7 +13,7 @@
 
       <!-- Filter bar: Tartil / bulan / tahun, plus the color key -->
       <Border Grid.Row="1" Classes="filter-bar" Margin="0,0,0,16">
-        <Grid ColumnDefinitions="220,100,100,*">
+        <Grid ColumnDefinitions="200,120,150,*">
           <ComboBox Grid.Column="0" Classes="filter" ItemsSource="{Binding AvailableTartil}" SelectedItem="{Binding SelectedTartil}" Margin="0,0,8,0" HorizontalAlignment="Stretch">
             <ComboBox.ItemTemplate>
               <DataTemplate x:DataType="exp:TartilOption">
@@ -46,7 +46,7 @@
            the days-in-month and no DataGrid package is referenced. -->
       <Border Grid.Row="2" Classes="flat-card" Padding="0">
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-          <Grid x:Name="TableGrid"/>
+          <Grid x:Name="TableGrid" />
         </ScrollViewer>
       </Border>
 

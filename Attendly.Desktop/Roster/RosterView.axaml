@@ -4,42 +4,105 @@
              xmlns:conv="using:Avalonia.Data.Converters"
              x:Class="Attendly.Desktop.Roster.RosterView"
              x:DataType="vm:RosterViewModel">
-  <Grid ColumnDefinitions="*,340" Margin="16">
-    <Grid Grid.Column="0" RowDefinitions="Auto,*" Margin="0,0,16,0">
-      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-        <ComboBox Grid.Column="0" ItemsSource="{Binding FilterOptions}" SelectedItem="{Binding SelectedFilter}" HorizontalAlignment="Stretch">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:TartilFilterOption">
-              <TextBlock Text="{Binding Label}"/>
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <Button Grid.Column="1" Content="+ Tambah Santri" Command="{Binding AddNewCommand}" Margin="8,0,0,0"/>
-      </Grid>
 
-      <ScrollViewer Grid.Row="1">
-        <ItemsControl ItemsSource="{Binding Rows}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:SantriRowViewModel">
-              <Border Padding="10" Margin="0,0,0,6" CornerRadius="6" Background="{DynamicResource CardBackgroundBrush}">
-                <Grid ColumnDefinitions="*,Auto,Auto">
-                  <StackPanel Grid.Column="0">
-                    <TextBlock Text="{Binding Nama}" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding SubtitleDisplay}" Opacity="0.7" FontSize="12"/>
-                  </StackPanel>
-                  <Button Grid.Column="1" Content="Edit" Command="{Binding EditCommand}" Margin="0,0,6,0"/>
-                  <Button Grid.Column="2" Content="Nonaktifkan" Command="{Binding DeactivateCommand}"/>
+    <Border Background="{DynamicResource AppBackgroundBrush}">
+        <Grid ColumnDefinitions="*,350">
+            <Grid Grid.Column="0" RowDefinitions="Auto,*,Auto" Margin="24,24,0,24">
+            <!-- Header Section - Row 0 -->
+            <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+                <TextBlock Text="Data Santri" Classes="heading"/>
+                <TextBlock Text="Data, Status dan Identitas santri." 
+                           Foreground="{DynamicResource TextSecondaryBrush}" 
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+                <!-- Main Content - Left Panel - Row 1 -->
+            <Grid Grid.Row="1"> 
+                <Grid RowDefinitions="Auto,*" Margin="0,0,16,0">
+                    <!-- Toolbar -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                        <ComboBox Grid.Column="0" 
+                                  ItemsSource="{Binding FilterOptions}" 
+                                  SelectedItem="{Binding SelectedFilter}" 
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TartilFilterOption">
+                                    <TextBlock Text="{Binding Label}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Grid.Column="1" 
+                                Content="+ Tambah Santri" 
+                                Command="{Binding AddNewCommand}" 
+                                Classes="primary" 
+                                Margin="8,0,0,0"/>
+                    </Grid>
+                     <!-- Santri List -->
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding Rows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SantriRowViewModel">
+                                    <Border Padding="10" 
+                                            Margin="0,0,0,6" 
+                                            CornerRadius="6" 
+                                            Background="{DynamicResource SurfaceBrush}" 
+                                            BorderBrush="{DynamicResource BorderSubtleBrush}" 
+                                            BorderThickness="1">
+                                        <Grid ColumnDefinitions="*,Auto,Auto">
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding Nama}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding SubtitleDisplay}" 
+                                                           Foreground="{DynamicResource TextSecondaryBrush}" 
+                                                           FontSize="12"/>
+                                            </StackPanel>
+                                            <Button Grid.Column="1" 
+                                                    Content="Edit" 
+                                                    Command="{Binding EditCommand}" 
+                                                    Margin="0,0,6,0"/>
+                                            <Button Grid.Column="2" 
+                                                    Content="Nonaktifkan" 
+                                                    Command="{Binding DeactivateCommand}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </Grid>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </ScrollViewer>
-    </Grid>
+            </Grid>
+                  <!-- Footer/Status Bar - Row 2 -->
+            <StackPanel Grid.Row="2" 
+                        Orientation="Horizontal" 
+                        Spacing="8" 
+                        Margin="0,16,0,0">
+                <TextBlock Text="Total Santri: " Foreground="{DynamicResource TextSecondaryBrush}"/>
+                <TextBlock Text="{Binding TotalCount}" FontWeight="SemiBold"/>
+            </StackPanel>
+                </Grid>
 
-   <Border Grid.Column="1" Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="16"
-             IsVisible="{Binding Editing, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
-      <ContentControl Content="{Binding Editing}"/>
+
+
+                <!-- Right Panel: Edit Form -->
+                <Border Grid.Column="1" 
+                        Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderSubtleBrush}" 
+                        BorderThickness="1" 
+                
+                        Padding="16"
+                        IsVisible="{Binding Editing, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                    <ContentControl Content="{Binding Editing}"/>
+                </Border>
+        
+            
+        </Grid>
+        
+
+            
+                
+
+                    
+
+            
+           
+
     </Border>
-  </Grid>
 </UserControl>

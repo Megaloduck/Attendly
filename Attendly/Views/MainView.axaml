@@ -8,19 +8,22 @@
              x:Class="Attendly.Views.MainView"
              x:DataType="vm:MainViewModel">
 
-  <Grid RowDefinitions="Auto,*,Auto">
-    <Border Grid.Row="0" Padding="14,12" Background="#2563EB">
+  <Grid RowDefinitions="Auto,*,Auto" Background="{DynamicResource AppBackgroundBrush}">
+    <!-- Top bar: same quiet treatment as Desktop's Sidebar (Identity Statement §7) -
+         canvas-toned with a hairline bottom border, not a solid accent block. -->
+    <Border Grid.Row="0" Padding="14,12" Background="{DynamicResource AppBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,0,0,1">
       <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Grid.Column="0" Text="Attendly" Foreground="White" FontWeight="Bold" FontSize="17" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="0" Text="Attendly" Classes="heading" VerticalAlignment="Center"/>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
           <Button Command="{Binding ToggleThemeCommand}" Background="Transparent" Padding="4">
-            <controls:LucideIcon Kind="{Binding ThemeMode, Converter={StaticResource ThemeModeToIconKindConverter}}" Width="18" Height="18" Stroke="White"/>
+            <controls:LucideIcon Kind="{Binding ThemeMode, Converter={StaticResource ThemeModeToIconKindConverter}}" Width="18" Height="18"/>
           </Button>
           <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
             <controls:LucideIcon Kind="{Binding SyncState, Converter={StaticResource SyncStateToIconKindConverter}}"
                                   Stroke="{Binding SyncState, Converter={StaticResource SyncStateToBrushConverter}}"
                                   Width="16" Height="16"/>
-            <TextBlock Text="{Binding SyncState}" Foreground="White" FontSize="11" VerticalAlignment="Center" Opacity="0.9"/>
+            <TextBlock Text="{Binding SyncState}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" VerticalAlignment="Center"/>
           </StackPanel>
         </StackPanel>
       </Grid>
@@ -28,8 +31,10 @@
 
     <ContentControl Grid.Row="1" Content="{Binding CurrentPage}"/>
 
-    <Border Grid.Row="2" Background="{DynamicResource CardBackgroundBrush}" Padding="0,8"
-            BorderBrush="#E5E7EB" BorderThickness="0,1,0,0"
+    <!-- Bottom dock: same quiet-nav rule as the top bar and Desktop's Sidebar - a muted
+         surface with a hairline separator, not the old CardBackgroundBrush/#E5E7EB pair. -->
+    <Border Grid.Row="2" Background="{DynamicResource SurfaceMutedBrush}" Padding="0,8"
+            BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="0,1,0,0"
             IsVisible="{Binding IsDockVisible}">
       <ItemsControl ItemsSource="{Binding NavItems}">
         <ItemsControl.ItemsPanel>

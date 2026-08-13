@@ -1,4 +1,4 @@
-﻿    using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,10 +22,10 @@ public class DonutProgress : Control
         AvaloniaProperty.Register<DonutProgress, double>(nameof(Percentage));
 
     public static readonly StyledProperty<IBrush> TrackBrushProperty =
-        AvaloniaProperty.Register<DonutProgress, IBrush>(nameof(TrackBrush), new SolidColorBrush(Color.Parse("#E5E7EB")));
+        AvaloniaProperty.Register<DonutProgress, IBrush>(nameof(TrackBrush), new SolidColorBrush(Color.Parse("#E4DDD0")));
 
     public static readonly StyledProperty<IBrush> ProgressBrushProperty =
-        AvaloniaProperty.Register<DonutProgress, IBrush>(nameof(ProgressBrush), new SolidColorBrush(Color.Parse("#2563EB")));
+        AvaloniaProperty.Register<DonutProgress, IBrush>(nameof(ProgressBrush), new SolidColorBrush(Color.Parse("#BD5B3D")));
 
     public static readonly StyledProperty<double> StrokeThicknessProperty =
         AvaloniaProperty.Register<DonutProgress, double>(nameof(StrokeThickness), 14.0);

@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Media;
+using Attendly.Converters;
 using Attendly.Models;
 
 namespace Attendly.ViewModels;
@@ -27,15 +28,18 @@ public sealed class ActivityLogRowViewModel
             ? $"{oldStatus.ToDisplayLabel()} → {entry.NewStatus.ToDisplayLabel()}"
             : entry.NewStatus.ToDisplayLabel();
 
-        StatusColor = new SolidColorBrush(Color.Parse(entry.NewStatus switch
+        // Same resource keys as MonthlyGridViewModel.StatusBrushKeys - kept in sync by
+        // convention rather than a shared constant, since the two live in different
+        // projects (Attendly vs Attendly.Desktop) and neither depends on the other.
+        StatusColor = entry.NewStatus switch
         {
-            AttendanceStatus.Hadir => "#16A34A",
-            AttendanceStatus.Alpha => "#DC2626",
-            AttendanceStatus.Izin => "#D97706",
-            AttendanceStatus.Sakit => "#2563EB",
-            AttendanceStatus.Libur => "#9CA3AF",
-            _ => "#9CA3AF",
-        }));
+            AttendanceStatus.Hadir => ThemeBrush.Resolve("StatusSuccessBrush", "#6E8F73"),
+            AttendanceStatus.Alpha => ThemeBrush.Resolve("StatusErrorBrush", "#B2564A"),
+            AttendanceStatus.Izin => ThemeBrush.Resolve("StatusWarningBrush", "#C08A4E"),
+            AttendanceStatus.Sakit => ThemeBrush.Resolve("StatusInfoBrush", "#7C8FA6"),
+            AttendanceStatus.Libur => ThemeBrush.Resolve("StatusNeutralBrush", "#A29C90"),
+            _ => ThemeBrush.Resolve("StatusNeutralBrush", "#A29C90"),
+        };
 
         var changedAt = new DateTime(entry.ChangedAtTicks).ToLocalTime();
         TimeDisplay = changedAt.ToString("HH:mm");

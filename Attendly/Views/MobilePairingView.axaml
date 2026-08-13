@@ -4,17 +4,17 @@
              xmlns:controls="using:Attendly.Controls"
              x:Class="Attendly.Views.MobilePairingView"
              x:DataType="vm:MobilePairingViewModel">
-  <StackPanel Margin="20" Spacing="14">
-    <TextBlock Text="Hubungkan ke Desktop" FontSize="20" FontWeight="Bold"/>
+  <StackPanel Margin="20" Spacing="14" Background="{DynamicResource AppBackgroundBrush}">
+    <TextBlock Text="Hubungkan ke Desktop" Classes="heading"/>
 
-    <Border Background="#DCFCE7" CornerRadius="10" Padding="12" IsVisible="{Binding IsPaired}">
+    <Border Background="{DynamicResource SurfaceMutedBrush}" CornerRadius="8" Padding="12" IsVisible="{Binding IsPaired}">
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <controls:LucideIcon Kind="CircleCheck" Width="18" Height="18" Stroke="#166534"/>
-        <TextBlock Text="{Binding PairedDesktopLabel, StringFormat='Terhubung ke {0}'}" Foreground="#166534" VerticalAlignment="Center"/>
+        <controls:LucideIcon Kind="CircleCheck" Width="18" Height="18" Stroke="{DynamicResource StatusSuccessBrush}"/>
+        <TextBlock Text="{Binding PairedDesktopLabel, StringFormat='Terhubung ke {0}'}" Foreground="{DynamicResource StatusSuccessBrush}" VerticalAlignment="Center"/>
       </StackPanel>
     </Border>
 
-    <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="10" Padding="16">
+    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
       <StackPanel Spacing="10">
         <TextBlock Text="Nama Anda" FontWeight="SemiBold" FontSize="13"/>
         <TextBox Text="{Binding TeacherName}" Watermark="Contoh: Ustadzah Fatimah"/>
@@ -33,7 +33,7 @@
       </StackPanel>
     </Border>
 
-    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Opacity="0.8" FontSize="13"/>
+    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
 
     <Button Content="Selesai" Command="{Binding DoneCommand}" HorizontalAlignment="Left"/>
   </StackPanel>

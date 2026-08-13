@@ -5,15 +5,15 @@
              x:Class="Attendly.Desktop.Dashboard.DashboardView"
              x:DataType="vm:DashboardViewModel">
   <ScrollViewer>
-    <StackPanel Margin="24" Spacing="20">
+    <StackPanel Margin="24">
       <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
         <TextBlock Text="Dashboard" Classes="heading"/>
-        <TextBlock Text="Ringkasan absensi santri   ." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+        <TextBlock Text="Ringkasan absensi santri." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
       </StackPanel>
 
-      <StackPanel Orientation="Horizontal">
+      <Grid ColumnDefinitions="225,*" HorizontalAlignment="Stretch" Margin="0,0,0,16">
         <!-- Statistics ring: santri already assigned to a Kelas, at a glance -->
-        <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,16,0">
+        <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,16,0">
           <StackPanel Spacing="10" HorizontalAlignment="Stretch">
             <TextBlock Text="Statistik" FontWeight="SemiBold" FontSize="15" HorizontalAlignment="Left"/>
             <Grid Width="160" Height="160">
@@ -34,7 +34,7 @@
   <ItemsControl Grid.Column="1" ItemsSource="{Binding StatCards}">
     <ItemsControl.ItemsPanel>
       <ItemsPanelTemplate>
-        <UniformGrid Columns="3" HorizontalAlignment=""/>
+        <UniformGrid Columns="3" HorizontalAlignment="Stretch"  ColumnSpacing="10" RowSpacing="10" />
       </ItemsPanelTemplate>
     </ItemsControl.ItemsPanel>
     <ItemsControl.ItemTemplate>
@@ -43,9 +43,8 @@
                 BorderBrush="{DynamicResource BorderSubtleBrush}" 
                 BorderThickness="1" 
                 CornerRadius="8" 
-                Padding="16" 
-                Margin="0,0,12,12">
-          <StackPanel Spacing="10">
+                Padding="16" >
+          <StackPanel Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Stretch" >
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -84,7 +83,7 @@
       </DataTemplate>
     </ItemsControl.ItemTemplate>
   </ItemsControl>
-      </StackPanel>
+      </Grid>
 
       <!-- Santri per Kelas: label + proportional bar + count -->
       <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="20">

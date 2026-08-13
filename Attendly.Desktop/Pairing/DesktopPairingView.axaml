@@ -5,10 +5,10 @@
              xmlns:controls="using:Attendly.Controls"
              x:Class="Attendly.Desktop.Pairing.DesktopPairingView"
              x:DataType="vm:DesktopPairingViewModel">
-  <Grid RowDefinitions="Auto,*" Margin="24">
+  <Grid RowDefinitions="Auto,*" Margin="24" Background="{DynamicResource AppBackgroundBrush}">
     <StackPanel Grid.Row="0" Spacing="12">
-      <TextBlock Text="Hubungkan Perangkat Guru" FontSize="22" FontWeight="Bold"/>
-      <TextBlock Text="Buat kode baru, lalu scan dengan aplikasi di HP guru (atau salin kode untuk dimasukkan manual)." Opacity="0.7" TextWrapping="Wrap"/>
+      <TextBlock Text="Hubungkan Perangkat Guru" Classes="heading"/>
+      <TextBlock Text="Buat kode baru, lalu scan dengan aplikasi di HP guru (atau salin kode untuk dimasukkan manual)." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
 
       <StackPanel Spacing="6">
         <TextBlock Text="IP komputer ini (di jaringan WiFi sekolah)" FontWeight="SemiBold" FontSize="13"/>
@@ -21,7 +21,9 @@
 
         <!-- Detected candidates as tappable chips - ComboBox isn't editable in Avalonia,
              so a plain free-typing TextBox above plus these fill-in buttons covers both
-             "pick a detected one" and "type it myself" without fighting the control. -->
+             "pick a detected one" and "type it myself" without fighting the control.
+             CornerRadius trimmed from 20 (full pill) to 8, per Identity Statement §6 -
+             pill-shaped controls are explicitly out per the brief. -->
         <ItemsControl ItemsSource="{Binding AvailableIps}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
@@ -31,29 +33,32 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="x:String">
               <Button Content="{Binding}" Tag="{Binding}" Click="OnIpCandidateClick"
-                      FontSize="11" Padding="10,4" Margin="0,4,6,0" CornerRadius="20"
-                      Background="{DynamicResource CardBackgroundBrush}"/>
+                      FontSize="11" Padding="10,4" Margin="0,4,6,0" CornerRadius="8"
+                      Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"/>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <TextBlock Text="Jika alamat di atas bukan IP WiFi sekolah (misalnya IP dari VPN/VirtualBox), ketik manual atau pilih salah satu di atas." Opacity="0.55" FontSize="11" TextWrapping="Wrap"/>
+        <TextBlock Text="Jika alamat di atas bukan IP WiFi sekolah (misalnya IP dari VPN/VirtualBox), ketik manual atau pilih salah satu di atas." Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
       </StackPanel>
 
-      <Button Content="Buat Kode Baru" Command="{Binding GenerateCodeCommand}" HorizontalAlignment="Left"/>
+      <Button Content="Buat Kode Baru" Command="{Binding GenerateCodeCommand}" Classes="primary" HorizontalAlignment="Left"/>
 
       <StackPanel Spacing="10" IsVisible="{Binding PairingCodeText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
 
+        <!-- Background stays literal White (not a theme token) regardless of Light/Dark -
+             a QR code's quiet zone needs true white to stay reliably scannable, which is
+             a functional requirement, not a style preference. -->
         <Border Background="White" Padding="12" HorizontalAlignment="Left" CornerRadius="8"
                 IsVisible="{Binding QrImage, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
           <Image Source="{Binding QrImage}" Width="200" Height="200"/>
         </Border>
 
-        <TextBlock Text="{Binding QrError}" Foreground="#D97706" FontSize="12" TextWrapping="Wrap"
+        <TextBlock Text="{Binding QrError}" Foreground="{DynamicResource StatusWarningBrush}" FontSize="12" TextWrapping="Wrap"
                    IsVisible="{Binding QrError, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
 
-        <TextBlock Text="Atau masukkan kode ini secara manual di HP guru:" FontSize="13" Opacity="0.7"/>
-        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="8" Padding="12,10">
+        <TextBlock Text="Atau masukkan kode ini secara manual di HP guru:" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}"/>
+        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
           <SelectableTextBlock Text="{Binding PairingCodeText}" FontFamily="Consolas,monospace" FontSize="14" TextWrapping="Wrap"/>
         </Border>
       </StackPanel>
@@ -65,11 +70,11 @@
       <ItemsControl ItemsSource="{Binding PairedDevices}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:PairedDeviceRowViewModel">
-            <Border Padding="10" Margin="0,0,0,6" CornerRadius="6" Background="{DynamicResource CardBackgroundBrush}">
+            <Border Padding="10" Margin="0,0,0,6" CornerRadius="6" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
               <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0">
                   <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
-                  <TextBlock Text="{Binding PairedAndLastSeen}" Opacity="0.7" FontSize="12"/>
+                  <TextBlock Text="{Binding PairedAndLastSeen}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
                 </StackPanel>
                 <Button Grid.Column="1" Content="Hapus" Command="{Binding RemoveCommand}"/>
               </Grid>
@@ -79,4 +84,4 @@
       </ItemsControl>
     </ScrollViewer>
   </Grid>
-</UserControl>  
+</UserControl>
