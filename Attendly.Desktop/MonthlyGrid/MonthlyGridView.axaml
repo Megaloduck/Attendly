@@ -46,14 +46,15 @@
            the days-in-month and no DataGrid package is referenced. -->
       <Border Grid.Row="2" Classes="flat-card" Padding="0">
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-          <Grid x:Name="TableGrid" />
+          <Grid x:Name="TableGrid"/>
         </ScrollViewer>
       </Border>
 
       <TextBlock Grid.Row="2" Text="Memuat..." IsVisible="{Binding IsLoading}" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-      <!-- Three KPI summary cards -->
-      <Grid Grid.Row="3" ColumnDefinitions="*,*,*" Margin="0,16,0,0">
+      <!-- Four KPI summary cards - Izin and Sakit split apart so each gets its own
+           number and its own status color, matching the legend and the grid dots. -->
+      <Grid Grid.Row="3" ColumnDefinitions="*,*,*,*" Margin="0,16,0,0">
         <Border Grid.Column="0" Classes="kpi-card" Margin="0,0,8,0">
           <StackPanel Spacing="6">
             <TextBlock Text="HADIR" Classes="kpi-label"/>
@@ -68,11 +69,18 @@
             <TextBlock Text="Tanpa keterangan" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
           </StackPanel>
         </Border>
-        <Border Grid.Column="2" Classes="kpi-card" Margin="8,0,0,0">
+        <Border Grid.Column="2" Classes="kpi-card" Margin="8,0">
           <StackPanel Spacing="6">
-            <TextBlock Text="IZIN + SAKIT" Classes="kpi-label"/>
-            <TextBlock Text="{Binding LeaveCount}" Classes="kpi-value" Foreground="{DynamicResource StatusWarningBrush}"/>
-            <TextBlock Text="Izin dan sakit digabung" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <TextBlock Text="IZIN" Classes="kpi-label"/>
+            <TextBlock Text="{Binding IzinCount}" Classes="kpi-value" Foreground="{DynamicResource StatusWarningBrush}"/>
+            <TextBlock Text="Izin resmi" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="3" Classes="kpi-card" Margin="8,0,0,0">
+          <StackPanel Spacing="6">
+            <TextBlock Text="SAKIT" Classes="kpi-label"/>
+            <TextBlock Text="{Binding SakitCount}" Classes="kpi-value" Foreground="{DynamicResource StatusInfoBrush}"/>
+            <TextBlock Text="Sakit" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
           </StackPanel>
         </Border>
       </Grid>

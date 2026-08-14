@@ -43,9 +43,7 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
 
     /// <summary>Resource keys, not literal hex - resolved at render time against whichever
     /// theme dictionary (Light/Dark) is active, via ResourceKeyToBrushConverter (legend) and
-    /// MonthlyGridView.axaml.cs's GetBrush() (table cells). Sakit keeps its own distinct key
-    /// (StatusInfoBrush) even though its count folds into the "Leave" KPI card - the five
-    /// attendance states are still five different dot colors here.</summary>
+    /// MonthlyGridView.axaml.cs's GetBrush() (table cells).</summary>
     private static readonly Dictionary<AttendanceStatus, string> StatusBrushKeys = new()
     {
         [AttendanceStatus.Hadir] = "StatusSuccessBrush",
@@ -73,11 +71,14 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
     [ObservableProperty]
     private MonthlyGridTableData? _gridData;
 
-    // The three KPI cards: Present / Absent / Leave, out of all counted (session-day)
+    // Four KPI cards: Present / Absent / Izin / Sakit, out of all counted (session-day)
     // marks. Libur is excluded from the base - same convention the export already uses.
+    // Izin and Sakit used to be combined into one "Leave" card; split per request so each
+    // gets its own number and its own dot color, matching the legend and the grid itself.
     [ObservableProperty] private int _presentCount;
     [ObservableProperty] private int _absentCount;
-    [ObservableProperty] private int _leaveCount;
+    [ObservableProperty] private int _izinCount;
+    [ObservableProperty] private int _sakitCount;
     [ObservableProperty] private double _presentPercent;
 
     public ObservableCollection<LegendItemViewModel> LegendItems { get; } = new();
@@ -141,7 +142,8 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
 
         PresentCount = counts[AttendanceStatus.Hadir];
         AbsentCount = counts[AttendanceStatus.Alpha];
-        LeaveCount = counts[AttendanceStatus.Izin] + counts[AttendanceStatus.Sakit];
+        IzinCount = counts[AttendanceStatus.Izin];
+        SakitCount = counts[AttendanceStatus.Sakit];
         PresentPercent = countedTotal == 0 ? 0 : PresentCount / (double)countedTotal * 100;
 
         LegendItems.Clear();

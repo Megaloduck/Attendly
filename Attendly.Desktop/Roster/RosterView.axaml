@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Attendly.Desktop.Roster"
              xmlns:conv="using:Avalonia.Data.Converters"
+             xmlns:controls="using:Attendly.Controls"
              x:Class="Attendly.Desktop.Roster.RosterView"
              x:DataType="vm:RosterViewModel">
 
@@ -16,55 +17,67 @@
                 <!-- Main Content - Left Panel - Row 1 -->
             <Grid Grid.Row="1"> 
                 <Grid RowDefinitions="Auto,*" Margin="0,0,16,0">
-                    <!-- Toolbar -->
-                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-                        <ComboBox Grid.Column="0" 
-                                  ItemsSource="{Binding FilterOptions}" 
-                                  SelectedItem="{Binding SelectedFilter}" 
-                                  HorizontalAlignment="Stretch">
+                    <!-- Toolbar: Tartil filter, name search, add button -->
+                    <Grid Grid.Row="0" ColumnDefinitions="180,*,Auto" Margin="0,0,0,12">
+                        <ComboBox Grid.Column="0"
+                                  ItemsSource="{Binding FilterOptions}"
+                                  SelectedItem="{Binding SelectedFilter}"
+                                  HorizontalAlignment="Stretch"
+                                  Margin="0,0,8,0">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="vm:TartilFilterOption">
                                     <TextBlock Text="{Binding Label}"/>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <Button Grid.Column="1" 
-                                Content="+ Tambah Santri" 
-                                Command="{Binding AddNewCommand}" 
-                                Classes="primary" 
-                                Margin="8,0,0,0"/>
+                        <TextBox Grid.Column="1" Text="{Binding SearchText}" Watermark="Cari nama santri..." Margin="0,0,8,0">
+                            <TextBox.InnerLeftContent>
+                                <controls:LucideIcon Kind="Search" Width="16" Height="16" Margin="8,0,0,0" Opacity="0.5"/>
+                            </TextBox.InnerLeftContent>
+                        </TextBox>
+                        <Button Grid.Column="2"
+                                Content="+ Tambah Santri"
+                                Command="{Binding AddNewCommand}"
+                                Classes="primary"/>
                     </Grid>
                      <!-- Santri List -->
-                    <ScrollViewer Grid.Row="1">
-                        <ItemsControl ItemsSource="{Binding Rows}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:SantriRowViewModel">
-                                    <Border Padding="10" 
-                                            Margin="0,0,0,6" 
-                                            CornerRadius="6" 
-                                            Background="{DynamicResource SurfaceBrush}" 
-                                            BorderBrush="{DynamicResource BorderSubtleBrush}" 
-                                            BorderThickness="1">
-                                        <Grid ColumnDefinitions="*,Auto,Auto">
-                                            <StackPanel Grid.Column="0">
-                                                <TextBlock Text="{Binding Nama}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{Binding SubtitleDisplay}" 
-                                                           Foreground="{DynamicResource TextSecondaryBrush}" 
-                                                           FontSize="12"/>
-                                            </StackPanel>
-                                            <Button Grid.Column="1" 
-                                                    Content="Edit" 
-                                                    Command="{Binding EditCommand}" 
-                                                    Margin="0,0,6,0"/>
-                                            <Button Grid.Column="2" 
-                                                    Content="Nonaktifkan" 
-                                                    Command="{Binding DeactivateCommand}"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    <Grid Grid.Row="1">
+                        <ScrollViewer>
+                            <ItemsControl ItemsSource="{Binding Rows}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SantriRowViewModel">
+                                        <Border Padding="10"
+                                                Margin="0,0,0,6"
+                                                CornerRadius="6"
+                                                Background="{DynamicResource SurfaceBrush}"
+                                                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                BorderThickness="1">
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Nama}" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding SubtitleDisplay}"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                                               FontSize="12"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Content="Edit"
+                                                        Command="{Binding EditCommand}"
+                                                        Margin="0,0,6,0"/>
+                                                <Button Grid.Column="2"
+                                                        Content="Nonaktifkan"
+                                                        Command="{Binding DeactivateCommand}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <StackPanel IsVisible="{Binding IsSearchEmpty}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+                            <controls:LucideIcon Kind="Search" Width="28" Height="28" Opacity="0.4" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Tidak ada santri yang cocok" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" FontSize="13"/>
+                        </StackPanel>
+                    </Grid>
                 </Grid>
             </Grid>
                   <!-- Footer/Status Bar - Row 2 -->
@@ -77,8 +90,6 @@
             </StackPanel>
                 </Grid>
 
-
-
                 <!-- Right Panel: Edit Form -->
                 <Border Grid.Column="1" 
                         Background="{DynamicResource SurfaceBrush}" 
@@ -88,18 +99,6 @@
                         IsVisible="{Binding Editing, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
                     <ContentControl Content="{Binding Editing}"/>
                 </Border>
-        
-            
         </Grid>
-        
-
-            
-                
-
-                    
-
-            
-           
-
     </Border>
 </UserControl>

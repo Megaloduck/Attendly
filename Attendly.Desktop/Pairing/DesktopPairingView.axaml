@@ -5,84 +5,114 @@
              xmlns:controls="using:Attendly.Controls"
              x:Class="Attendly.Desktop.Pairing.DesktopPairingView"
              x:DataType="vm:DesktopPairingViewModel">
-    <Border Background="{DynamicResource AppBackgroundBrush}">
-        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" Margin="24">
-            <!-- Header Section -->
-            <StackPanel Grid.Row="0" Spacing="4">
-                <TextBlock Text="Hubungkan Perangkat Guru" Classes="heading"/>
-                <TextBlock Text="Buat kode baru, lalu scan dengan aplikasi di HP guru (atau salin kode untuk dimasukkan manual)." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
-            </StackPanel>
 
-            <!-- IP Selection -->
-            <StackPanel Grid.Row="1" Spacing="6" Margin="0,16,0,0">
-                <TextBlock Text="IP komputer ini (di jaringan WiFi sekolah)" FontWeight="SemiBold" FontSize="13"/>
-                <Grid ColumnDefinitions="*,Auto">
-                    <TextBox Grid.Column="0" Text="{Binding SelectedIp}" Watermark="192.168.1.X"/>
-                    <Button Grid.Column="1" Command="{Binding RefreshIpsCommand}" Margin="6,0,0,0" Padding="8">
-                        <controls:LucideIcon Kind="RefreshCw" Width="16" Height="16"/>
-                    </Button>
+  <!-- Whole page scrolls as one unit - see the redesign note from the previous pass,
+       still true here: one ScrollViewer around everything instead of splitting scroll
+       behavior between the form and the device list. -->
+  <ScrollViewer Background="{DynamicResource AppBackgroundBrush}">
+    <StackPanel Margin="24" Spacing="20"  HorizontalAlignment="Stretch">
+
+      <StackPanel Spacing="4">
+        <TextBlock Text="Hubungkan Perangkat Guru" Classes="heading"/>
+        <TextBlock Text="Buat kode baru, lalu scan dengan aplikasi di HP guru (atau salin kode untuk dimasukkan manual)." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+      </StackPanel>
+
+      
+
+      <!-- QR + manual code, side by side - the two-card layout from the mockup.
+           "Buat Kode Baru" is gone as a standalone button; the refresh icon inside the
+           Kode Manual card now does that job (generates a fresh code the first time,
+           and regenerates it - invalidating the old one - every time after). -->
+      <Grid ColumnDefinitions="280,*">
+        <Border Grid.Column="0" Classes="flat-card" Padding="20" Margin="0,0,8,0">
+          <StackPanel Spacing="12">
+            <TextBlock Text="Kode QR" FontWeight="SemiBold" FontSize="13"/>
+
+            <Border Background="White" CornerRadius="8" Width="220" Height="220" HorizontalAlignment="Left">
+              <Grid>
+                <Image Source="{Binding QrImage}" Width="200" Height="200"
+                       IsVisible="{Binding QrImage, Converter={x:Static conv:ObjectConverters.IsNotNull}}"/>
+                <TextBlock Text="QR Code" Foreground="{DynamicResource TextSecondaryBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           IsVisible="{Binding QrImage, Converter={x:Static conv:ObjectConverters.IsNull}}"/>
+              </Grid>
+            </Border>
+
+            <TextBlock Text="{Binding QrError}" Foreground="{DynamicResource StatusWarningBrush}" FontSize="12" TextWrapping="Wrap"
+                       IsVisible="{Binding QrError, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+            <TextBlock Text="Pindai menggunakan aplikasi di HP guru." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
+                       IsVisible="{Binding QrError, Converter={x:Static conv:StringConverters.IsNullOrEmpty}}"/>
+
+
+            
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="flat-card" Padding="20" Margin="8,0,0,0">
+          <StackPanel Spacing="12">
+            <TextBlock Text="Kode Manual" FontWeight="SemiBold" FontSize="13"/>
+
+            <Grid ColumnDefinitions="*,Auto">
+              <Border Grid.Column="0" Background="{DynamicResource SurfaceMutedBrush}" CornerRadius="8" Padding="12,10" Margin="0,0,8,0" >
+                <Grid>
+                  <SelectableTextBlock Text="{Binding PairingCodeText}" FontFamily="Consolas,monospace" FontSize="14" TextWrapping="Wrap"
+                                       IsVisible="{Binding PairingCodeText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
+                  <TextBlock Text="Klik refresh untuk membuat kode baru." FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}"
+                             TextWrapping="Wrap" VerticalAlignment="Center"
+                             IsVisible="{Binding PairingCodeText, Converter={x:Static conv:StringConverters.IsNullOrEmpty}}"/>
                 </Grid>
+              </Border>
+              <Button Grid.Column="1" Command="{Binding GenerateCodeCommand}" Padding="8" VerticalAlignment="Center">
+                <controls:LucideIcon Kind="RefreshCw" Width="16" Height="16"/>
+              </Button>
+            </Grid>
 
-                <!-- Detected candidates as tappable chips -->
-                <ItemsControl ItemsSource="{Binding AvailableIps}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                            <Button Content="{Binding}" Tag="{Binding}" Click="OnIpCandidateClick"
-                                    FontSize="11" Padding="10,4" Margin="0,4,6,0" CornerRadius="8"
-                                    Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+            <TextBlock Text="Salin kode ini untuk dimasukkan manual di HP guru." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
 
-                <TextBlock Text="Jika alamat di atas bukan IP WiFi sekolah (misalnya IP dari VPN/VirtualBox), ketik manual atau pilih salah satu di atas." Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
-            </StackPanel>
+                <!-- IP selection - kept slim and uncarded on purpose, since it's a prerequisite
+           step rather than the main event; the QR/code pair below is what should draw
+           the eye. -->
 
-            <!-- Generate Code Button -->
-            <Button Grid.Row="2" Content="Buat Kode Baru" Command="{Binding GenerateCodeCommand}" Classes="primary" HorizontalAlignment="Left" Margin="0,16,0,0"/>
-
-            <!-- QR Code and Pairing Code -->
-            <StackPanel Grid.Row="3" Spacing="10" Margin="0,16,0,0"
-                        IsVisible="{Binding PairingCodeText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}">
-                <Border Background="White" Padding="12" HorizontalAlignment="Left" CornerRadius="8"
-                        IsVisible="{Binding QrImage, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
-                    <Image Source="{Binding QrImage}" Width="200" Height="200"/>
-                </Border>
-
-                <TextBlock Text="{Binding QrError}" Foreground="{DynamicResource StatusWarningBrush}" FontSize="12" TextWrapping="Wrap"
-                           IsVisible="{Binding QrError, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"/>
-
-                <TextBlock Text="Atau masukkan kode ini secara manual di HP guru:" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}"/>
-                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
-                    <SelectableTextBlock Text="{Binding PairingCodeText}" FontFamily="Consolas,monospace" FontSize="14" TextWrapping="Wrap"/>
-                </Border>
-            </StackPanel>
-
-            <!-- Paired Devices Header -->
-            <TextBlock Grid.Row="4" Text="Perangkat Terhubung" FontSize="16" FontWeight="SemiBold" Margin="0,16,0,0"/>
-
-            <!-- Paired Devices List -->
-            <ScrollViewer Grid.Row="5">
-                <ItemsControl ItemsSource="{Binding PairedDevices}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:PairedDeviceRowViewModel">
-                            <Border Padding="10" Margin="0,0,0,6" CornerRadius="6" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding PairedAndLastSeen}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Content="Hapus" Command="{Binding RemoveCommand}"/>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+              <TextBlock Text="IP komputer ini (di jaringan WiFi sekolah)" FontWeight="SemiBold" FontSize="13"/>
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBox Grid.Column="0" Text="{Binding SelectedIp}" Watermark="192.168.1.X" Height="45" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+          <Button Grid.Column="1" Command="{Binding RefreshIpsCommand}" Margin="8,0,0,0" Padding="8">
+            <controls:LucideIcon Kind="RefreshCw" Width="16" Height="16"/>
+          </Button>
         </Grid>
-    </Border>
+
+        
+
+        <TextBlock Text="Ketik manual atau gunakan IP WiFi sekolah (VPN/VirtualBox) di atas." Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+      
+
+
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <!-- Paired devices - plain rows (no border, per the mockup) with an icon-only
+           delete instead of a "Hapus" text button. -->
+      <StackPanel Spacing="10">
+        <TextBlock Text="Perangkat Terhubung" FontSize="16" FontWeight="SemiBold"/>
+        <ItemsControl ItemsSource="{Binding PairedDevices}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:PairedDeviceRowViewModel">
+              <Border Padding="12,10" Margin="0,0,0,6" CornerRadius="8" Background="{DynamicResource SurfaceBrush}">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding PairedAndLastSeen}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+                  </StackPanel>
+                  <Button Grid.Column="1" Command="{Binding RemoveCommand}" Background="Transparent" Padding="8" VerticalAlignment="Center">
+                    <controls:LucideIcon Kind="Trash2" Width="18" Height="18" Stroke="{DynamicResource StatusErrorBrush}"/>
+                  </Button>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
 </UserControl>

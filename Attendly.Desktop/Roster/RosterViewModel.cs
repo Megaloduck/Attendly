@@ -3,10 +3,10 @@ using Attendly.Models;
 using Attendly.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Bibliography;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Attendly.Desktop.Roster;
@@ -18,11 +18,15 @@ public sealed record TartilFilterOption(string Label, TartilLevel? Level, bool I
 public partial class RosterViewModel : ViewModelBase
 {
     private readonly AttendanceRepository _repository;
+    private readonly List<SantriRowViewModel> _allRows = new();
 
     public IReadOnlyList<TartilFilterOption> FilterOptions { get; } = BuildFilterOptions();
 
     [ObservableProperty]
     private TartilFilterOption _selectedFilter;
+
+    [ObservableProperty]
+    private string _searchText = string.Empty;
 
     [ObservableProperty]
     private bool _isLoading = true;
@@ -33,6 +37,13 @@ public partial class RosterViewModel : ViewModelBase
 
     public ObservableCollection<SantriRowViewModel> Rows { get; } = new();
 
+    /// <summary>The view already bound to this (Roster footer's "Total Santri: {0}"), but
+    /// nothing ever defined it - the binding was silently failing. Now reflects whatever
+    /// the search box has filtered down to, not just the raw Tartil-filtered count.</summary>
+    public int TotalCount => Rows.Count;
+
+    public bool IsSearchEmpty => !string.IsNullOrWhiteSpace(SearchText) && Rows.Count == 0 && !IsLoading;
+
     public RosterViewModel(AttendanceRepository repository)
     {
         _repository = repository;
@@ -41,6 +52,8 @@ public partial class RosterViewModel : ViewModelBase
     }
 
     partial void OnSelectedFilterChanged(TartilFilterOption value) => _ = LoadAsync();
+    partial void OnSearchTextChanged(string value) => ApplyFilter();
+    partial void OnIsLoadingChanged(bool value) => OnPropertyChanged(nameof(IsSearchEmpty));
 
     private static List<TartilFilterOption> BuildFilterOptions()
     {
@@ -54,7 +67,6 @@ public partial class RosterViewModel : ViewModelBase
     private async Task LoadAsync()
     {
         IsLoading = true;
-        Rows.Clear();
 
         List<Santri> santri = SelectedFilter.IsUnassigned
             ? await _repository.GetUnassignedSantriAsync()
@@ -62,10 +74,32 @@ public partial class RosterViewModel : ViewModelBase
                 ? await _repository.GetSantriByTartilAsync(level)
                 : await _repository.GetAllSantriAsync();
 
+        _allRows.Clear();
         foreach (var s in santri)
-            Rows.Add(new SantriRowViewModel(s, EditAsync, DeactivateAsync));
+            _allRows.Add(new SantriRowViewModel(s, EditAsync, DeactivateAsync));
 
+        ApplyFilter();
         IsLoading = false;
+    }
+
+    /// <summary>Name search runs client-side over whatever the Tartil dropdown already
+    /// loaded - same two-layer pattern AttendanceViewModel and ActivityLogViewModel use,
+    /// so switching the Tartil filter doesn't need a new DB round-trip per keystroke.</summary>
+    private void ApplyFilter()
+    {
+        Rows.Clear();
+
+        var query = string.IsNullOrWhiteSpace(SearchText)
+            ? _allRows.AsEnumerable()
+            : _allRows.Where(r =>
+                r.Nama.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                r.SubtitleDisplay.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+
+        foreach (var row in query)
+            Rows.Add(row);
+
+        OnPropertyChanged(nameof(TotalCount));
+        OnPropertyChanged(nameof(IsSearchEmpty));
     }
 
     [RelayCommand]
