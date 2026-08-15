@@ -23,6 +23,7 @@
                                   ItemsSource="{Binding FilterOptions}"
                                   SelectedItem="{Binding SelectedFilter}"
                                   HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
                                   Margin="0,0,8,0">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="vm:TartilFilterOption">
@@ -30,7 +31,7 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <TextBox Grid.Column="1" Text="{Binding SearchText}" Watermark="Cari nama santri..." Margin="0,0,8,0">
+                        <TextBox Grid.Column="1" Text="{Binding SearchText}" Watermark="Cari nama santri..." VerticalAlignment="Stretch"  Margin="0,0,8,0">
                             <TextBox.InnerLeftContent>
                                 <controls:LucideIcon Kind="Search" Width="16" Height="16" Margin="8,0,0,0" Opacity="0.5"/>
                             </TextBox.InnerLeftContent>
@@ -52,20 +53,27 @@
                                                 Background="{DynamicResource SurfaceBrush}"
                                                 BorderBrush="{DynamicResource BorderSubtleBrush}"
                                                 BorderThickness="1">
-                                            <Grid ColumnDefinitions="*,Auto,Auto">
-                                                <StackPanel Grid.Column="0">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding Nama}" FontWeight="SemiBold"/>
                                                     <TextBlock Text="{Binding SubtitleDisplay}"
                                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                                FontSize="12"/>
                                                 </StackPanel>
-                                                <Button Grid.Column="1"
-                                                        Content="Edit"
-                                                        Command="{Binding EditCommand}"
-                                                        Margin="0,0,6,0"/>
-                                                <Button Grid.Column="2"
-                                                        Content="Nonaktifkan"
-                                                        Command="{Binding DeactivateCommand}"/>
+
+                                                <!-- Icon-only actions: view overview, edit, deactivate -
+                                                     same compact pattern as DesktopPairingView's device rows. -->
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                                    <Button Command="{Binding InspectCommand}" Background="Transparent" Padding="6">
+                                                        <controls:LucideIcon Kind="Eye" Width="16" Height="16"/>
+                                                    </Button>
+                                                    <Button Command="{Binding EditCommand}" Background="Transparent" Padding="6">
+                                                        <controls:LucideIcon Kind="Pencil" Width="16" Height="16"/>
+                                                    </Button>
+                                                    <Button Command="{Binding DeactivateCommand}" Background="Transparent" Padding="6">
+                                                        <controls:LucideIcon Kind="Trash2" Width="16" Height="16" Stroke="{DynamicResource StatusErrorBrush}"/>
+                                                    </Button>
+                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -90,15 +98,25 @@
             </StackPanel>
                 </Grid>
 
-                <!-- Right Panel: Edit Form -->
-                <Border Grid.Column="1" 
-                        Background="{DynamicResource SurfaceBrush}" 
-                        BorderBrush="{DynamicResource BorderSubtleBrush}" 
-                        BorderThickness="1"                 
-                        Padding="16"
-                        IsVisible="{Binding Editing, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
-                    <ContentControl Content="{Binding Editing}"/>
-                </Border>
+                <!-- Right Panel: Edit form or read-only status overview - mutually
+                     exclusive, both bound in the same cell so only one ever shows. -->
+                <Grid Grid.Column="1">
+                    <Border Background="{DynamicResource SurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            Padding="16"
+                            IsVisible="{Binding Editing, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                        <ContentControl Content="{Binding Editing}"/>
+                    </Border>
+
+                    <Border Background="{DynamicResource SurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            Padding="16"
+                            IsVisible="{Binding Inspecting, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                        <ContentControl Content="{Binding Inspecting}"/>
+                    </Border>
+                </Grid>
         </Grid>
     </Border>
 </UserControl>

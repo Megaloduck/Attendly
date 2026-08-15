@@ -31,15 +31,18 @@ public partial class RosterViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isLoading = true;
 
-    /// <summary>Non-null while the add/edit form should be showing in the right-hand panel.</summary>
+    /// <summary>Non-null while the add/edit form should be showing in the right-hand panel.
+    /// Mutually exclusive with Inspecting - opening one closes the other.</summary>
     [ObservableProperty]
     private SantriEditViewModel? _editing;
 
+    /// <summary>Non-null while the read-only status overview should be showing in the
+    /// right-hand panel (the eye icon on a row). Mutually exclusive with Editing.</summary>
+    [ObservableProperty]
+    private SantriStatusViewModel? _inspecting;
+
     public ObservableCollection<SantriRowViewModel> Rows { get; } = new();
 
-    /// <summary>The view already bound to this (Roster footer's "Total Santri: {0}"), but
-    /// nothing ever defined it - the binding was silently failing. Now reflects whatever
-    /// the search box has filtered down to, not just the raw Tartil-filtered count.</summary>
     public int TotalCount => Rows.Count;
 
     public bool IsSearchEmpty => !string.IsNullOrWhiteSpace(SearchText) && Rows.Count == 0 && !IsLoading;
@@ -76,7 +79,7 @@ public partial class RosterViewModel : ViewModelBase
 
         _allRows.Clear();
         foreach (var s in santri)
-            _allRows.Add(new SantriRowViewModel(s, EditAsync, DeactivateAsync));
+            _allRows.Add(new SantriRowViewModel(s, InspectAsync, EditAsync, DeactivateAsync));
 
         ApplyFilter();
         IsLoading = false;
@@ -105,11 +108,30 @@ public partial class RosterViewModel : ViewModelBase
     [RelayCommand]
     private void AddNew()
     {
+        Inspecting = null;
         Editing = new SantriEditViewModel(null, SaveAsync, () => Editing = null);
+    }
+
+    /// <summary>The eye icon on a row. Its own Edit button jumps straight into
+    /// SantriEditView for the same santri, closing the overview on the way.</summary>
+    private Task InspectAsync(Santri santri)
+    {
+        Editing = null;
+        Inspecting = new SantriStatusViewModel(
+            santri,
+            _repository,
+            onEdit: () =>
+            {
+                Inspecting = null;
+                Editing = new SantriEditViewModel(santri, SaveAsync, () => Editing = null);
+            },
+            onClose: () => Inspecting = null);
+        return Task.CompletedTask;
     }
 
     private Task EditAsync(Santri santri)
     {
+        Inspecting = null;
         Editing = new SantriEditViewModel(santri, SaveAsync, () => Editing = null);
         return Task.CompletedTask;
     }
@@ -123,15 +145,17 @@ public partial class RosterViewModel : ViewModelBase
 
     private async Task DeactivateAsync(int santriId)
     {
+        Inspecting = null;
         await _repository.DeactivateSantriAsync(santriId);
         await LoadAsync();
     }
 }
 
-/// <summary>One row in the roster list - a santri plus Edit/Deactivate actions.</summary>
+/// <summary>One row in the roster list - a santri plus Lihat/Edit/Nonaktifkan actions.</summary>
 public partial class SantriRowViewModel : ObservableObject
 {
     private readonly Santri _santri;
+    private readonly Func<Santri, Task> _onInspect;
     private readonly Func<Santri, Task> _onEdit;
     private readonly Func<int, Task> _onDeactivate;
 
@@ -141,12 +165,16 @@ public partial class SantriRowViewModel : ObservableObject
         $"{_santri.NamaPanggilan} · {_santri.TartilLevel?.ToDisplayString() ?? "Belum ditentukan"} · " +
         (_santri.JenisKelamin == JenisKelamin.LakiLaki ? "Laki-laki" : "Perempuan");
 
-    public SantriRowViewModel(Santri santri, Func<Santri, Task> onEdit, Func<int, Task> onDeactivate)
+    public SantriRowViewModel(Santri santri, Func<Santri, Task> onInspect, Func<Santri, Task> onEdit, Func<int, Task> onDeactivate)
     {
         _santri = santri;
+        _onInspect = onInspect;
         _onEdit = onEdit;
         _onDeactivate = onDeactivate;
     }
+
+    [RelayCommand]
+    private Task Inspect() => _onInspect(_santri);
 
     [RelayCommand]
     private Task Edit() => _onEdit(_santri);

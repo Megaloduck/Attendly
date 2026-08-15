@@ -1,8 +1,126 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Attendly.Desktop.SantriStatusView">
-  Welcome to Avalonia!
+             xmlns:vm="using:Attendly.Desktop.Roster"
+             xmlns:coreVm="using:Attendly.ViewModels"
+             xmlns:controls="using:Attendly.Controls"
+             x:Class="Attendly.Desktop.Roster.SantriStatusView"
+             x:DataType="vm:SantriStatusViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="16" Margin="0,0,8,0">
+
+      <!-- Header: avatar + name + close -->
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <Border Grid.Column="0" Width="48" Height="48" CornerRadius="24" Background="{DynamicResource AccentBrush}" VerticalAlignment="Center">
+          <TextBlock Text="{Binding Initials}" Foreground="White" FontWeight="Bold" FontSize="16"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+          <TextBlock Text="{Binding Nama}" FontWeight="SemiBold" FontSize="16"/>
+          <TextBlock Text="{Binding NamaPanggilan}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+        </StackPanel>
+        <Button Grid.Column="2" Command="{Binding CloseCommand}" Background="Transparent" Padding="6" VerticalAlignment="Top">
+          <controls:LucideIcon Kind="X" Width="18" Height="18"/>
+        </Button>
+      </Grid>
+
+      <!-- Basic profile -->
+      <Border Classes="flat-card" Padding="14">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="*,*">
+            <StackPanel Grid.Column="0" Spacing="2">
+              <TextBlock Text="NIK" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+              <TextBlock Text="{Binding Nik}" FontSize="13"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="2">
+              <TextBlock Text="Jenis Kelamin" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+              <TextBlock Text="{Binding GenderDisplay}" FontSize="13"/>
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="*,*">
+            <StackPanel Grid.Column="0" Spacing="2">
+              <TextBlock Text="Tartil" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+              <TextBlock Text="{Binding TartilDisplay}" FontSize="13"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="2">
+              <TextBlock Text="Tahun Masuk" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+              <TextBlock Text="{Binding MasukTpqDisplay}" FontSize="13"/>
+            </StackPanel>
+          </Grid>
+          <StackPanel Spacing="2" IsVisible="{Binding HasTempatLahir}">
+            <TextBlock Text="Tempat Lahir" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <TextBlock Text="{Binding TempatLahir}" FontSize="13"/>
+          </StackPanel>
+          <StackPanel Spacing="2" IsVisible="{Binding HasAlamat}">
+            <TextBlock Text="Alamat" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <TextBlock Text="{Binding Alamat}" FontSize="13" TextWrapping="Wrap"/>
+          </StackPanel>
+          <StackPanel Spacing="2">
+            <TextBlock Text="Status" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <TextBlock Text="{Binding StatusDisplay}" FontSize="13" FontWeight="SemiBold"
+                       Foreground="{Binding StatusBrushKey, Converter={StaticResource ResourceKeyToBrushConverter}}"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- This month's attendance -->
+      <StackPanel Spacing="8">
+        <TextBlock Text="{Binding MonthLabel}" FontWeight="SemiBold" FontSize="13"/>
+        <Grid ColumnDefinitions="*,*,*,*">
+          <Border Grid.Column="0" Classes="kpi-card" Margin="0,0,4,0" Padding="10">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding CountHadir}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource StatusSuccessBrush}" HorizontalAlignment="Center"/>
+              <TextBlock Text="Hadir" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1" Classes="kpi-card" Margin="4,0" Padding="10">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding CountAlpha}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource StatusErrorBrush}" HorizontalAlignment="Center"/>
+              <TextBlock Text="Alpha" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="2" Classes="kpi-card" Margin="4,0" Padding="10">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding CountIzin}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource StatusWarningBrush}" HorizontalAlignment="Center"/>
+              <TextBlock Text="Izin" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="3" Classes="kpi-card" Margin="4,0,0,0" Padding="10">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding CountSakit}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource StatusInfoBrush}" HorizontalAlignment="Center"/>
+              <TextBlock Text="Sakit" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </StackPanel>
+
+      <!-- Recent activity -->
+      <StackPanel Spacing="8">
+        <TextBlock Text="Aktivitas Terbaru" FontWeight="SemiBold" FontSize="13"/>
+
+        <ItemsControl ItemsSource="{Binding RecentActivity}" IsVisible="{Binding HasRecentActivity}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="coreVm:ActivityLogRowViewModel">
+              <Border Padding="10" Margin="0,0,0,6" CornerRadius="8" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderSubtleBrush}" BorderThickness="1">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{Binding StatusColor}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding StatusChangeText}" FontSize="12"/>
+                    <TextBlock Text="{Binding MetaLine}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="2" Text="{Binding TimeDisplay}" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Top"/>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock Text="Belum ada aktivitas tercatat." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"
+                   IsVisible="{Binding ShowNoActivityMessage}"/>
+      </StackPanel>
+
+      <TextBlock Text="Memuat..." IsVisible="{Binding IsLoading}" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+
+      <Button Content="Edit Santri" Command="{Binding EditCommand}" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+    </StackPanel>
+  </ScrollViewer>
 </UserControl>

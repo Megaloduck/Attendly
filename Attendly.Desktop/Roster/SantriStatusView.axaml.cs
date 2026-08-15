@@ -1,8 +1,6 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
-namespace Attendly.Desktop;
+namespace Attendly.Desktop.Roster;
 
 public partial class SantriStatusView : UserControl
 {

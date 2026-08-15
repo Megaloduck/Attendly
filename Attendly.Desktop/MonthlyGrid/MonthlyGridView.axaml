@@ -11,9 +11,9 @@
         <TextBlock Text="Rekap kehadiran satu kelas dalam satu bulan." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
       </StackPanel>
 
-      <!-- Filter bar: Tartil / bulan / tahun, plus the color key -->
+      <!-- Filter bar: Tartil / bulan (nama, bukan angka) / tahun, plus the color key -->
       <Border Grid.Row="1" Classes="filter-bar" Margin="0,0,0,16">
-        <Grid ColumnDefinitions="200,120,150,*">
+        <Grid ColumnDefinitions="200,150,Auto,*">
           <ComboBox Grid.Column="0" Classes="filter" ItemsSource="{Binding AvailableTartil}" SelectedItem="{Binding SelectedTartil}" Margin="0,0,8,0" HorizontalAlignment="Stretch">
             <ComboBox.ItemTemplate>
               <DataTemplate x:DataType="exp:TartilOption">
@@ -21,8 +21,14 @@
               </DataTemplate>
             </ComboBox.ItemTemplate>
           </ComboBox>
-          <NumericUpDown Grid.Column="1" Value="{Binding SelectedMonth}" Minimum="1" Maximum="12" Margin="0,0,8,0"/>
-          <NumericUpDown Grid.Column="2" Value="{Binding SelectedYear}" Minimum="2020" Maximum="2100"/>
+          <ComboBox Grid.Column="1" Classes="filter" ItemsSource="{Binding AvailableMonths}" SelectedItem="{Binding SelectedMonth}" Margin="0,0,8,0" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="exp:MonthOption">
+                <TextBlock Text="{Binding Label}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <NumericUpDown Grid.Column="2" Classes="filter" Value="{Binding SelectedYear}" Minimum="2020" Maximum="2100"/>
 
           <ItemsControl Grid.Column="3" ItemsSource="{Binding LegendItems}" HorizontalAlignment="Right">
             <ItemsControl.ItemsPanel>

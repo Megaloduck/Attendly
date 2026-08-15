@@ -2,6 +2,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Attendly.Controls">
 
+  <!-- Baseline text color app-wide - without this, every TextBlock that doesn't set its
+       own Foreground falls back to Fluent's default black/white instead of the warm
+       charcoal/cream tokens. More specific selectors below (kpi-label, dock-item, etc.)
+       still win where they set their own Foreground. -->
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+  </Style>
+
   <!-- 44dp minimum tap target, applied app-wide so no button anywhere falls short.
        Accessibility floor, not a style choice - unaffected by the restyle. -->
   <Style Selector="Button">
@@ -33,6 +41,33 @@
     <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+  </Style>
+
+  <!-- Numeric steppers (Tahun/Year fields) - same treatment as TextBox/ComboBox so a
+       row mixing all three controls reads as one system rather than three different
+       looks. NumericUpDown is a composite control (an inner TextBox plus spin buttons),
+       so :focus-within is used instead of :focus - focus actually lands on that inner
+       TextBox, not the NumericUpDown control itself. -->
+  <Style Selector="NumericUpDown">
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    <Setter Property="Padding" Value="10,8"/>
+    <Setter Property="MinHeight" Value="40"/>
+  </Style>
+  <Style Selector="NumericUpDown:pointerover">
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+  <Style Selector="NumericUpDown:focus-within">
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+
+  <!-- Filter-bar variant: same look, more compact, matching ComboBox.filter's height
+       so a Year field sitting next to a Tartil/Month dropdown lines up with it. -->
+  <Style Selector="NumericUpDown.filter">
+    <Setter Property="MinHeight" Value="36"/>
   </Style>
 
   <!-- Thin rounded progress bars - used for per-kelas attendance completion. -->
@@ -138,8 +173,39 @@
     <Setter Property="CornerRadius" Value="8"/>
     <Setter Property="Padding" Value="14,12"/>
   </Style>
-  <Style Selector="ComboBox.filter">
+  <!-- Rounded, comfortable dropdowns app-wide - same treatment as TextBox, so a form
+       mixing both controls reads as one system instead of two different looks. -->
+  <Style Selector="ComboBox">
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="Padding" Value="10,8"/>
+    <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    <Setter Property="MinHeight" Value="40"/>
+  </Style>
+  <Style Selector="ComboBox:pointerover">
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+
+  <!-- Dropdown list items: quiet by default, muted-surface on hover, accent-soft pill
+       with accent text when selected - the exact same "accent marks the active thing"
+       rule as the Sidebar's nav items, just applied to a dropdown instead of a nav list. -->
+  <Style Selector="ComboBoxItem">
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
     <Setter Property="CornerRadius" Value="6"/>
+    <Setter Property="Padding" Value="10,8"/>
+  </Style>
+  <Style Selector="ComboBoxItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource SurfaceMutedBrush}"/>
+  </Style>
+  <Style Selector="ComboBoxItem:selected">
+    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+  </Style>
+
+  <!-- Filter-bar variant: same look, just more compact for a toolbar strip. -->
+  <Style Selector="ComboBox.filter">
     <Setter Property="MinHeight" Value="36"/>
   </Style>
 

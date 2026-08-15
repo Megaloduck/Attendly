@@ -59,14 +59,25 @@ public partial class MonthlyGridView : UserControl
             app.ActualThemeVariantChanged -= OnActualThemeVariantChanged;
     }
 
-    /// <summary>Resolves a themed brush by resource key - same lookup chain a DynamicResource
-    /// binding uses, just called from code since this table is built programmatically.
-    /// Falls back to the given hex if the resource isn't found yet (e.g. called before this
-    /// control is attached), so nothing ever renders blank.</summary>
-    private IBrush GetBrush(string key, string fallbackHex) =>
-        this.TryFindResource(key, out var value) && value is IBrush brush
-            ? brush
-            : new SolidColorBrush(Color.Parse(fallbackHex));
+    /// <summary>Resolves a themed brush by resource key. Uses Application.Current directly
+    /// against its ActualThemeVariant - the same mechanism Converters.cs's ThemeBrush.Resolve
+    /// already uses successfully for the status dots, sync badge, etc. - rather than
+    /// this.TryFindResource(), which depends on this control's own theme context resolving
+    /// correctly through the visual tree at the exact moment Rebuild() runs. That dependency
+    /// was the bug: it could silently fail and fall through to the light-mode fallback hex
+    /// even while the app was actually in Dark mode, which is why the name column was
+    /// unreadable (near-black text on a dark background) regardless of theme.</summary>
+    private IBrush GetBrush(string key, string fallbackHex)
+    {
+        if (Application.Current is { } app &&
+            app.TryGetResource(key, app.ActualThemeVariant, out var value) &&
+            value is IBrush brush)
+        {
+            return brush;
+        }
+
+        return new SolidColorBrush(Color.Parse(fallbackHex));
+    }
 
     private void Rebuild()
     {
@@ -89,9 +100,12 @@ public partial class MonthlyGridView : UserControl
         for (var r = 0; r < data.Rows.Count; r++)
             TableGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-        AddHeaderCell(0, "Santri", gridBorderBrush, headerBackground, isNameColumn: true);
+        AddNameHeaderCell(gridBorderBrush, headerBackground);
         for (var d = 0; d < data.DaysInMonth; d++)
-            AddHeaderCell(d + 1, (d + 1).ToString(), gridBorderBrush, headerBackground);
+        {
+            var dayName = d < data.DayNames.Count ? data.DayNames[d] : null;
+            AddDayHeaderCell(d + 1, (d + 1).ToString(), dayName, gridBorderBrush, headerBackground);
+        }
 
         for (var r = 0; r < data.Rows.Count; r++)
         {
@@ -105,30 +119,75 @@ public partial class MonthlyGridView : UserControl
         }
     }
 
-    private void AddHeaderCell(int column, string text, IBrush borderBrush, IBrush headerBackground, bool isNameColumn = false)
+    /// <summary>The "Santri" corner header - left-aligned, single line, distinct from the
+    /// day columns which now carry two lines (day name + day number).</summary>
+    private void AddNameHeaderCell(IBrush borderBrush, IBrush headerBackground)
     {
         var border = new Border
         {
             BorderBrush = borderBrush,
             BorderThickness = new Thickness(0, 0, 0, 1),
             Background = headerBackground,
-            Padding = new Thickness(6, 10),
-            MinWidth = isNameColumn ? NameColumnWidth : DayColumnWidth,
+            Padding = new Thickness(10, 10),
+            MinWidth = NameColumnWidth,
+        };
+
+        Grid.SetRow(border, 0);
+        Grid.SetColumn(border, 0);
+
+        border.Child = new TextBlock
+        {
+            Text = "Santri",
+            FontSize = 12,
+            FontWeight = FontWeight.SemiBold,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Foreground = GetBrush("TextSecondaryBrush", "#7A7367"),
+        };
+
+        TableGrid.Children.Add(border);
+    }
+
+    /// <summary>One day column's header - day-of-week abbreviation (small, muted) stacked
+    /// above the day number (existing size/weight), so a glance at the header shows which
+    /// columns are session days without needing to count from the 1st.</summary>
+    private void AddDayHeaderCell(int column, string dayNumber, string? dayName, IBrush borderBrush, IBrush headerBackground)
+    {
+        var border = new Border
+        {
+            BorderBrush = borderBrush,
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Background = headerBackground,
+            Padding = new Thickness(4, 8),
+            MinWidth = DayColumnWidth,
         };
 
         Grid.SetRow(border, 0);
         Grid.SetColumn(border, column);
 
-        border.Child = new TextBlock
+        var stack = new StackPanel { Spacing = 1, HorizontalAlignment = HorizontalAlignment.Center };
+
+        if (!string.IsNullOrEmpty(dayName))
         {
-            Text = text,
+            stack.Children.Add(new TextBlock
+            {
+                Text = dayName,
+                FontSize = 9,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Foreground = GetBrush("TextSecondaryBrush", "#7A7367"),
+            });
+        }
+
+        stack.Children.Add(new TextBlock
+        {
+            Text = dayNumber,
             FontSize = 12,
             FontWeight = FontWeight.SemiBold,
-            HorizontalAlignment = isNameColumn ? HorizontalAlignment.Left : HorizontalAlignment.Center,
-            TextAlignment = isNameColumn ? TextAlignment.Left : TextAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment = TextAlignment.Center,
             Foreground = GetBrush("TextSecondaryBrush", "#7A7367"),
-        };
+        });
 
+        border.Child = stack;
         TableGrid.Children.Add(border);
     }
 

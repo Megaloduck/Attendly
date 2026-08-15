@@ -34,12 +34,32 @@ public sealed class MonthlyGridRow
 public sealed class MonthlyGridTableData
 {
     public int DaysInMonth { get; init; }
+    public IReadOnlyList<string> DayNames { get; init; } = Array.Empty<string>();
     public IReadOnlyList<MonthlyGridRow> Rows { get; init; } = Array.Empty<MonthlyGridRow>();
 }
 
 public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
 {
     private readonly AttendanceRepository _repository;
+
+    private static readonly string[] MonthNames =
+    {
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+    };
+
+    /// <summary>3-letter Indonesian day abbreviations for the grid's header row - hardcoded
+    /// rather than culture-dependent formatting, same reasoning as MonthNames above.</summary>
+    private static readonly Dictionary<DayOfWeek, string> DayAbbreviations = new()
+    {
+        [DayOfWeek.Sunday] = "Min",
+        [DayOfWeek.Monday] = "Sen",
+        [DayOfWeek.Tuesday] = "Sel",
+        [DayOfWeek.Wednesday] = "Rab",
+        [DayOfWeek.Thursday] = "Kam",
+        [DayOfWeek.Friday] = "Jum",
+        [DayOfWeek.Saturday] = "Sab",
+    };
 
     /// <summary>Resource keys, not literal hex - resolved at render time against whichever
     /// theme dictionary (Light/Dark) is active, via ResourceKeyToBrushConverter (legend) and
@@ -56,6 +76,11 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
     public IReadOnlyList<TartilOption> AvailableTartil { get; } =
         Enum.GetValues<TartilLevel>().Select(l => new TartilOption(l, l.ToDisplayString())).ToList();
 
+    /// <summary>MonthOption is defined alongside TartilOption in ExportViewModel.cs and
+    /// shared from there - same cross-reference this file already had for TartilOption.</summary>
+    public IReadOnlyList<MonthOption> AvailableMonths { get; } =
+        Enumerable.Range(1, 12).Select(m => new MonthOption(m, MonthNames[m - 1])).ToList();
+
     [ObservableProperty]
     private TartilOption _selectedTartil;
 
@@ -63,7 +88,7 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
     private decimal _selectedYear = DateTime.Today.Year;
 
     [ObservableProperty]
-    private decimal _selectedMonth = DateTime.Today.Month;
+    private MonthOption _selectedMonth;
 
     [ObservableProperty]
     private bool _isLoading = true;
@@ -73,8 +98,6 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
 
     // Four KPI cards: Present / Absent / Izin / Sakit, out of all counted (session-day)
     // marks. Libur is excluded from the base - same convention the export already uses.
-    // Izin and Sakit used to be combined into one "Leave" card; split per request so each
-    // gets its own number and its own dot color, matching the legend and the grid itself.
     [ObservableProperty] private int _presentCount;
     [ObservableProperty] private int _absentCount;
     [ObservableProperty] private int _izinCount;
@@ -87,12 +110,13 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
     {
         _repository = repository;
         _selectedTartil = AvailableTartil[0];
+        _selectedMonth = AvailableMonths[DateTime.Today.Month - 1];
         _ = LoadAsync();
     }
 
     partial void OnSelectedTartilChanged(TartilOption value) => _ = LoadAsync();
     partial void OnSelectedYearChanged(decimal value) => _ = LoadAsync();
-    partial void OnSelectedMonthChanged(decimal value) => _ = LoadAsync();
+    partial void OnSelectedMonthChanged(MonthOption value) => _ = LoadAsync();
 
     public async Task LoadAsync()
     {
@@ -100,7 +124,7 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
 
         var level = SelectedTartil.Level;
         var year = (int)SelectedYear;
-        var month = (int)SelectedMonth;
+        var month = SelectedMonth.Value;
         var daysInMonth = DateTime.DaysInMonth(year, month);
 
         var roster = await _repository.GetSantriByTartilAsync(level);
@@ -136,7 +160,14 @@ public partial class MonthlyGridViewModel : ViewModels.ViewModelBase
             rows.Add(new MonthlyGridRow { NamaPanggilan = santri.NamaPanggilan, Cells = cells });
         }
 
-        GridData = new MonthlyGridTableData { DaysInMonth = daysInMonth, Rows = rows };
+        GridData = new MonthlyGridTableData
+        {
+            DaysInMonth = daysInMonth,
+            DayNames = Enumerable.Range(1, daysInMonth)
+                .Select(d => DayAbbreviations[new DateTime(year, month, d).DayOfWeek])
+                .ToList(),
+            Rows = rows,
+        };
 
         var countedTotal = counts.Where(kv => kv.Key != AttendanceStatus.Libur).Sum(kv => kv.Value);
 
