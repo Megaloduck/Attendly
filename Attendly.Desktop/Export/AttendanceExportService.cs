@@ -12,9 +12,11 @@ using Attendly.Models;
 namespace Attendly.Desktop.Export;
 
 /// <summary>
-/// Exports one Tartil's monthly attendance in the exact column order verified
+/// Exports one or every Tartil's monthly attendance in the exact column order verified
 /// against the real July 2026 workbook: NO / NIK / NAMA / NAMA PANGGILAN /
 /// TARTIL / HADIR / S / I / A / [one column per day of the month].
+/// A null TartilLevel means "Semua Kelas" - every class together (one sheet per class
+/// in Excel, all rows appended in the CSV, distinguished by the TARTIL column).
 /// Desktop/admin-only - not part of the mobile teacher clients.
 /// </summary>
 public class AttendanceExportService
@@ -67,34 +69,44 @@ public class AttendanceExportService
         return (daysInMonth, rows);
     }
 
-    public async Task ExportCsvAsync(TartilLevel level, int year, int month, string filePath)
+    /// <summary>level == null exports every Tartil, one after another, into the same CSV -
+    /// NO restarts at 1 for each class (matching the per-sheet numbering in the XLSX
+    /// export), and the existing TARTIL column is what tells the classes apart.</summary>
+    public async Task ExportCsvAsync(TartilLevel? level, int year, int month, string filePath)
     {
-        var (daysInMonth, rows) = await BuildRowsAsync(level, year, month);
+        var daysInMonth = DateTime.DaysInMonth(year, month);
 
         var sb = new StringBuilder();
         var header = new List<string> { "NO", "NIK", "NAMA", "NAMA PANGGILAN", "TARTIL", "HADIR", "S", "I", "A" };
         header.AddRange(Enumerable.Range(1, daysInMonth).Select(d => d.ToString(CultureInfo.InvariantCulture)));
         sb.AppendLine(string.Join(",", header.Select(CsvEscape)));
 
-        foreach (var row in rows)
+        var levels = level is { } single ? new[] { single } : Enum.GetValues<TartilLevel>();
+
+        foreach (var lvl in levels)
         {
-            var fields = new List<string>
+            var (_, rows) = await BuildRowsAsync(lvl, year, month);
+
+            foreach (var row in rows)
             {
-                row.No.ToString(CultureInfo.InvariantCulture),
-                row.Santri.Nik,
-                row.Santri.Nama,
-                row.Santri.NamaPanggilan,
-                level.ToDisplayString(),
-                row.Hadir.ToString(CultureInfo.InvariantCulture),
-                row.Sakit.ToString(CultureInfo.InvariantCulture),
-                row.Izin.ToString(CultureInfo.InvariantCulture),
-                row.Alpha.ToString(CultureInfo.InvariantCulture),
-            };
+                var fields = new List<string>
+                {
+                    row.No.ToString(CultureInfo.InvariantCulture),
+                    row.Santri.Nik,
+                    row.Santri.Nama,
+                    row.Santri.NamaPanggilan,
+                    lvl.ToDisplayString(),
+                    row.Hadir.ToString(CultureInfo.InvariantCulture),
+                    row.Sakit.ToString(CultureInfo.InvariantCulture),
+                    row.Izin.ToString(CultureInfo.InvariantCulture),
+                    row.Alpha.ToString(CultureInfo.InvariantCulture),
+                };
 
-            for (var day = 1; day <= daysInMonth; day++)
-                fields.Add(row.StatusByDay.TryGetValue(day, out var status) ? status.ToCode().ToString() : "");
+                for (var day = 1; day <= daysInMonth; day++)
+                    fields.Add(row.StatusByDay.TryGetValue(day, out var status) ? status.ToCode().ToString() : "");
 
-            sb.AppendLine(string.Join(",", fields.Select(CsvEscape)));
+                sb.AppendLine(string.Join(",", fields.Select(CsvEscape)));
+            }
         }
 
         await File.WriteAllTextAsync(filePath, sb.ToString(), Encoding.UTF8);
@@ -105,17 +117,34 @@ public class AttendanceExportService
             ? "\"" + value.Replace("\"", "\"\"") + "\""
             : value;
 
-    public async Task ExportXlsxAsync(TartilLevel level, int year, int month, string filePath)
+    /// <summary>level == null exports every Tartil into the same workbook, one sheet per
+    /// class (via AddSheet below) - each sheet uses the exact layout a single-class export
+    /// already produced.</summary>
+    public async Task ExportXlsxAsync(TartilLevel? level, int year, int month, string filePath)
     {
-        var (daysInMonth, rows) = await BuildRowsAsync(level, year, month);
-
         using var workbook = new XLWorkbook();
+
+        var levels = level is { } single ? new[] { single } : Enum.GetValues<TartilLevel>();
+
+        foreach (var lvl in levels)
+        {
+            var (daysInMonth, rows) = await BuildRowsAsync(lvl, year, month);
+            AddSheet(workbook, lvl, daysInMonth, rows);
+        }
+
+        workbook.SaveAs(filePath);
+    }
+
+    /// <summary>Builds one class's sheet - fixed columns (NO..HADIR) vertically merged
+    /// across the two header rows; ABSEN merged horizontally over S/I/A - mirrors the
+    /// real manual's layout. Extracted out of ExportXlsxAsync so "Semua Kelas" can call
+    /// this once per class against the same workbook.</summary>
+    private static void AddSheet(XLWorkbook workbook, TartilLevel level, int daysInMonth, List<ExportRow> rows)
+    {
         var rawSheetName = level.ToDisplayString();
         var sheetName = rawSheetName.Length > 31 ? rawSheetName[..31] : rawSheetName; // Excel's 31-char sheet-name limit
         var sheet = workbook.Worksheets.Add(sheetName);
 
-        // Fixed columns (NO..HADIR) are vertically merged across the two header
-        // rows; ABSEN is merged horizontally over S/I/A - mirrors the real manual's layout.
         string[] fixedHeaders = { "NO", "NIK", "NAMA", "NAMA PANGGILAN", "TARTIL", "HADIR" };
         for (var col = 1; col <= fixedHeaders.Length; col++)
         {
@@ -168,7 +197,5 @@ public class AttendanceExportService
         sheet.Columns(1, dayStartCol + daysInMonth - 1).AdjustToContents();
         sheet.SheetView.FreezeRows(2);
         sheet.SheetView.FreezeColumns(4);
-
-        workbook.SaveAs(filePath);
     }
 }

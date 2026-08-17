@@ -8,7 +8,7 @@
             <!-- Header Section -->
          <StackPanel Spacing="4" Margin="0,0,0,16">
              <TextBlock Text="Ekspor Absensi" Classes="heading" VerticalAlignment="Center"/>
-             <TextBlock Text="Pilih kelas dan bulan, lalu ekspor sesuai format buku absensi asli." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>  
+             <TextBlock Text="Pilih kelas (atau Semua Kelas) dan bulan, lalu ekspor sesuai format buku absensi asli." Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>  
         </StackPanel>
 
             <!-- Content Section -->
@@ -16,7 +16,7 @@
                  <TextBlock Text="Kelas" FontWeight="SemiBold"/>
     <ComboBox ItemsSource="{Binding AvailableTartil}" SelectedItem="{Binding SelectedTartil}" HorizontalAlignment="Stretch">
       <ComboBox.ItemTemplate>
-        <DataTemplate x:DataType="vm:TartilOption">
+        <DataTemplate x:DataType="vm:ExportTartilOption">
           <TextBlock Text="{Binding Label}"/>
         </DataTemplate>
       </ComboBox.ItemTemplate>

@@ -84,6 +84,10 @@ public partial class MobilePairingViewModel : ViewModelBase
         {
             using var client = new HttpClient { BaseAddress = new Uri($"http://{ip}:{port}") };
             client.DefaultRequestHeaders.Add("X-Pairing-Token", token);
+            // Percent-encoded so the teacher's name can't break HTTP header rules (spaces,
+            // punctuation, non-Latin characters) - Desktop's middleware decodes it and uses
+            // it to replace the generic "Perangkat baru" placeholder with the real name.
+            client.DefaultRequestHeaders.Add("X-Teacher-Name", Uri.EscapeDataString(TeacherName.Trim()));
             client.Timeout = TimeSpan.FromSeconds(5);
 
             var response = await client.GetAsync("/api/health");
@@ -107,4 +111,4 @@ public partial class MobilePairingViewModel : ViewModelBase
 
     [RelayCommand]
     private void Done() => _goBack();
-}   
+}

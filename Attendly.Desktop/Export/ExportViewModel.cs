@@ -14,6 +14,11 @@ public sealed record TartilOption(TartilLevel Level, string Label);
 /// with MonthlyGridViewModel the same way TartilOption already is.</summary>
 public sealed record MonthOption(int Value, string Label);
 
+/// <summary>Export screen's own Tartil selector - distinct from TartilOption (which
+/// MonthlyGridViewModel also uses and always expects a concrete class). Level is null
+/// for the "Semua Kelas" entry, meaning every class exported together.</summary>
+public sealed record ExportTartilOption(string Label, TartilLevel? Level);
+
 public partial class ExportViewModel : ViewModels.ViewModelBase
 {
     private readonly AttendanceExportService _exportService;
@@ -24,14 +29,13 @@ public partial class ExportViewModel : ViewModels.ViewModelBase
         "Juli", "Agustus", "September", "Oktober", "November", "Desember",
     };
 
-    public IReadOnlyList<TartilOption> AvailableTartil { get; } =
-        Enum.GetValues<TartilLevel>().Select(l => new TartilOption(l, l.ToDisplayString())).ToList();
+    public IReadOnlyList<ExportTartilOption> AvailableTartil { get; } = BuildTartilOptions();
 
     public IReadOnlyList<MonthOption> AvailableMonths { get; } =
         Enumerable.Range(1, 12).Select(m => new MonthOption(m, MonthNames[m - 1])).ToList();
 
     [ObservableProperty]
-    private TartilOption _selectedTartil;
+    private ExportTartilOption _selectedTartil;
 
     // decimal to match Avalonia's NumericUpDown.Value type directly - avoids any
     // int/decimal binding-conversion ambiguity under compiled bindings.
@@ -47,12 +51,19 @@ public partial class ExportViewModel : ViewModels.ViewModelBase
     public ExportViewModel(AttendanceExportService exportService)
     {
         _exportService = exportService;
-        _selectedTartil = AvailableTartil[0];
+        _selectedTartil = AvailableTartil[1]; // first real class - "Semua Kelas" sits at [0] and stays opt-in
         _selectedMonth = AvailableMonths[DateTime.Today.Month - 1];
     }
 
+    private static List<ExportTartilOption> BuildTartilOptions()
+    {
+        var list = new List<ExportTartilOption> { new("Semua Kelas", null) };
+        list.AddRange(Enum.GetValues<TartilLevel>().Select(l => new ExportTartilOption(l.ToDisplayString(), l)));
+        return list;
+    }
+
     public string SuggestedFileName =>
-        $"Absensi_{SelectedTartil.Label.Replace(" ", "_")}_{(int)SelectedYear:D4}{SelectedMonth.Value:D2}";
+        $"Absensi_{(SelectedTartil.Level is { } level ? level.ToDisplayString() : "Semua_Kelas").Replace(" ", "_")}_{(int)SelectedYear:D4}{SelectedMonth.Value:D2}";
 
     public async Task ExportCsvAsync(string filePath)
     {

@@ -435,6 +435,13 @@ public class AttendanceRepository
     public Task TouchLastSeenAsync(string token) =>
         _db.ExecuteAsync("UPDATE PairedDevice SET LastSeenTicks = ? WHERE Token = ?", DateTime.UtcNow.Ticks, token);
 
+    /// <summary>Updates a paired device's display label - called by the Desktop API when a
+    /// mobile client sends its teacher name on the pairing confirmation call, so the
+    /// "Perangkat Terhubung" list shows the real teacher name instead of the generic
+    /// "Perangkat baru" placeholder set at QR-generation time.</summary>
+    public Task<int> UpdatePairedDeviceLabelAsync(string token, string label) =>
+        _db.ExecuteAsync("UPDATE PairedDevice SET Label = ? WHERE Token = ?", label, token);
+
     // ---------------- App settings ----------------
     public Task<AppSettings?> GetAppSettingsAsync() =>
         _db.Table<AppSettings>().Where(s => s.Id == 1).FirstOrDefaultAsync();

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -45,6 +46,20 @@ public static class AttendlyApiHost
             }
 
             await repository.TouchLastSeenAsync(token);
+
+            // Mobile sends its teacher name percent-encoded (X-Teacher-Name), currently
+            // only on the pairing confirmation health check (see MobilePairingViewModel.
+            // Connect()). This is what replaces the generic "Perangkat baru" placeholder -
+            // set on Desktop at QR-generation time - with the real teacher's name once
+            // they actually connect.
+            var teacherNameHeader = context.Request.Headers["X-Teacher-Name"].ToString();
+            if (!string.IsNullOrEmpty(teacherNameHeader))
+            {
+                var teacherName = Uri.UnescapeDataString(teacherNameHeader);
+                if (!string.IsNullOrWhiteSpace(teacherName))
+                    await repository.UpdatePairedDeviceLabelAsync(token, teacherName);
+            }
+
             await next();
         });
 
