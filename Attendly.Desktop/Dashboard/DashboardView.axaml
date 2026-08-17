@@ -23,7 +23,7 @@
                                        StrokeThickness="16"/>
               <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
                 <TextBlock Text="{Binding AssignedPercentageDisplay}" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center"/>
-                <TextBlock Text="Sudah di Kelas" FontSize="12" Opacity="0.7" HorizontalAlignment="Center"/>
+                <TextBlock Text="Lengkap terdaftar" FontSize="12" Opacity="0.7" HorizontalAlignment="Center"/>
               </StackPanel>
             </Grid>
             <TextBlock Text="{Binding TotalSantri, StringFormat='{}{0} Total Santri'}" FontWeight="SemiBold" HorizontalAlignment="Center"/>

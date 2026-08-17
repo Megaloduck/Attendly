@@ -80,6 +80,7 @@
   <Style Selector="Button.primary">
     <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
     <Setter Property="Foreground" Value="White"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="CornerRadius" Value="8"/>
   </Style>
 

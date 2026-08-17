@@ -85,7 +85,7 @@ internal static class LucideIconData
     public static readonly IReadOnlyDictionary<LucideIconKind, string> PathData = new Dictionary<LucideIconKind, string>
     {
         [LucideIconKind.Check] = "M20 6 9 17l-5-5",
-        [LucideIconKind.X] = "M18 6 6 18 m6 6 12 12",
+        [LucideIconKind.X] = "M11.383 13.644A1.03 1.03 0 0 1 9.928 15.1L6 11.172 2.072 15.1a1.03 1.03 0 1 1-1.455-1.456l3.928-3.928L.617 5.79a1.03 1.03 0 1 1 1.455-1.456L6 8.261l3.928-3.928a1.03 1.03 0 0 1 1.455 1.456L7.455 9.716z",
         [LucideIconKind.Thermometer] = "M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z",
         [LucideIconKind.FileText] = "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z M14 2v5a1 1 0 0 0 1 1h5 M10 9H8 M16 13H8 M16 17H8",
         [LucideIconKind.CalendarOff] = "M16 2v3 m2 2 20 20 M21 9h-5.5 M3 9h6 M3.586 3.586A2 2 0 003 5v14a2 2 0 002 2h14a2 2 0 001.414-.586 M8.656 3H19a2 2 0 012 2v10.344",
@@ -99,7 +99,7 @@ internal static class LucideIconData
         [LucideIconKind.ChevronRight] = "m9 18 6-6-6-6",
         [LucideIconKind.ChevronLeft] = "m15 18-6-6 6-6",
         [LucideIconKind.Plus] = "M5 12h14 M12 5v14",
-        [LucideIconKind.Pencil] = "M80 0v-160h800V0Zm160-320h56l312-311-29-29-28-28-311 312v56Zm-80 80v-170l448-447q11-11 25.5-17t30.5-6q16 0 31 6t27 18l55 56q12 11 17.5 26t5.5 31q0 15-5.5 29.5T777-687L330-240H160Zm560-504-56-56 56 56ZM608-631l-29-29-28-28 57 57Z",
+        [LucideIconKind.Pencil] = "M16.293 2.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1 0 1.414l-13 13A1 1 0 0 1 8 21H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 .293-.707l10-10 3-3zM14 7.414l-9 9V19h2.586l9-9L14 7.414zm4 1.172L19.586 7 17 4.414 15.414 6 18 8.586z",
         [LucideIconKind.Trash2] = "M10 11v6 M14 11v6 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
         [LucideIconKind.QrCode] = "M4,3 H7 A1,1 0 0 1 8,4 V7 A1,1 0 0 1 7,8 H4 A1,1 0 0 1 3,7 V4 A1,1 0 0 1 4,3 Z M17,3 H20 A1,1 0 0 1 21,4 V7 A1,1 0 0 1 20,8 H17 A1,1 0 0 1 16,7 V4 A1,1 0 0 1 17,3 Z M4,16 H7 A1,1 0 0 1 8,17 V20 A1,1 0 0 1 7,21 H4 A1,1 0 0 1 3,20 V17 A1,1 0 0 1 4,16 Z M21 16h-3a2 2 0 0 0-2 2v3 M21 21v.01 M12 7v3a2 2 0 0 1-2 2H7 M3 12h.01 M12 3h.01 M12 16v.01 M16 12h1 M21 12v.01 M12 21v-1",
         [LucideIconKind.ScanLine] = "M3 7V5a2 2 0 0 1 2-2h2 M17 3h2a2 2 0 0 1 2 2v2 M21 17v2a2 2 0 0 1-2 2h-2 M7 21H5a2 2 0 0 1-2-2v-2 M7 12h10",

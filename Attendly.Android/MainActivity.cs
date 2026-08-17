@@ -7,7 +7,7 @@ using Avalonia.Android;
 namespace Attendly.Android;
 
 [Activity(
-    Label = "Attendly.Android",
+    Label = "Attendly",
     Theme = "@style/MyTheme.NoActionBar",
     Icon = "@drawable/icon",
     MainLauncher = true,
